@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="glh\Graphics\Shader.h" />
+    <ClInclude Include="glh\Graphics\Camera.h" />
+    <ClInclude Include="glh\Graphics\Model.h" />
+    <ClInclude Include="glh\Graphics\Mesh.h" />
+    <ClInclude Include="glh\IO\Log.h" />
+    <ClInclude Include="glh\Core\Util.h" />
+    <ClInclude Include="glh\Graphics\Skybox.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="glh\Graphics\Camera.cpp" />
+    <ClCompile Include="glh\ThirdParty\glad.c" />
+    <ClCompile Include="glh\ThirdParty\stb_image.cpp" />
+    <ClCompile Include="glh\IO\Log.cpp" />
+    <ClCompile Include="glh\Core\Util.cpp" />
+    <ClCompile Include="glh\Graphics\Skybox.cpp" />
+  </ItemGroup>
+</Project>
