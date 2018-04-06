@@ -1,14 +1,19 @@
 #pragma once
 
+#include <iostream>
+
 class Skybox
 {
 public:
-	Skybox();
+	Skybox(std::string skyboxName);
 	
 	void Draw();
 
 private:
 	unsigned int VAO, VBO, EBO;
+	unsigned int cubemapTexture;
+
+	void loadCubemapTexture(std::string skyboxName);
 
 	float vertices[24] = {
 		// positions, Upper, Lower, Back, Front, Left, Right
@@ -26,8 +31,8 @@ private:
 		1, 3, 2,
 		6, 2, 3,	// front faces
 		3, 7, 6,
-		6, 4, 5,	// bottom faces
-		5, 7, 6,
+		6, 5, 4,	// bottom faces
+		5, 6, 7,
 		4, 5, 1,	// back faces
 		1, 0, 4,
 		4, 0, 2,	// left faces

@@ -10,15 +10,14 @@
 #include <glh/Graphics/Model.h>
 #include <glh/Graphics/Skybox.h>
 #include <glh/IO/Log.h>
+#include <glh/IO/FileSystem.h>
 
 #include <iostream>
 #include <sstream>
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-unsigned int loadCubemap(vector<std::string> faces);
 
 // settings
 const unsigned int SCR_WIDTH = 1280;
@@ -40,6 +39,7 @@ int main(int argc, char *argv[])
 	fileRoot.erase(fileRoot.find_last_of("\\/"));
 	std::replace(fileRoot.begin(), fileRoot.end(), '\\', '/');
 	fileRoot.append("/");
+	FileSystem::fileRoot = fileRoot;
 
 	Log::Write(Log::LOG_INFO, "File Root: " + fileRoot);
 	// glfw: initialize and configure
@@ -48,6 +48,7 @@ int main(int argc, char *argv[])
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 	glfwWindowHint(GLFW_SAMPLES, 4); // multisampling
 
 #ifdef __APPLE__
@@ -68,7 +69,6 @@ int main(int argc, char *argv[])
 	glfwSetWindowPos(window, (mode->width - SCR_WIDTH) / 2, (mode->height - SCR_HEIGHT) / 2);
 
 
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 	// configure global opengl state
 	// -----------------------------
 	glEnable(GL_DEPTH_TEST);
-	//glEnable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 	glEnable(GL_MULTISAMPLE);
 
 	// build and compile shaders	
@@ -97,26 +97,10 @@ int main(int argc, char *argv[])
 	// load models
 	// -----------
 	Model ourModel(fileRoot + "Data/Models/nanosuit/nanosuit.obj");
-	Skybox skyboxObject = Skybox();
-
-
-	vector<std::string> faces
-	{
-		fileRoot + "Data/Skyboxes/OceanIslands/right.jpg",
-		fileRoot + "Data/Skyboxes/OceanIslands/left.jpg",
-		fileRoot + "Data/Skyboxes/OceanIslands/top.jpg",
-		fileRoot + "Data/Skyboxes/OceanIslands/bottom.jpg",
-		fileRoot + "Data/Skyboxes/OceanIslands/front.jpg",
-		fileRoot + "Data/Skyboxes/OceanIslands/back.jpg"
-	};
-	unsigned int cubemapTexture = loadCubemap(faces);
-
-	// draw in wireframe
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	Skybox skyboxObject = Skybox("OceanIslands");
 
 	skyboxShader.use();
 	skyboxShader.setInt("skybox", 0);
-
 
 	int frames = 0;
 	float lastFPS = (float)glfwGetTime();
@@ -202,15 +186,6 @@ void processInput(GLFWwindow *window)
 		camera.ProcessKeyboard(RIGHT, deltaTime);
 }
 
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-	// make sure the viewport matches the new window dimensions; note that width and 
-	// height will be significantly larger than specified on retina displays.
-	glViewport(0, 0, width, height);
-}
-
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
@@ -236,43 +211,4 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll((float)yoffset);
-}
-
-// loads a cubemap texture from 6 individual texture faces
-// order:
-// +X (right)
-// -X (left)
-// +Y (top)
-// -Y (bottom)
-// +Z (front) 
-// -Z (back)
-// -------------------------------------------------------
-unsigned int loadCubemap(vector<std::string> faces)
-{
-	unsigned int textureID;
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-
-	int width, height, nrChannels;
-	for (unsigned int i = 0; i < faces.size(); i++)
-	{
-		unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
-		if (data)
-		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-			stbi_image_free(data);
-		}
-		else
-		{
-			std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
-			stbi_image_free(data);
-		}
-	}
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-	return textureID;
 }
