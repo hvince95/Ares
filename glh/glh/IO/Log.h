@@ -9,6 +9,8 @@ class Log
 {
 public:
 
+	static void SetLogLevel(int level);
+
 	/// Trace message level.
 	static const int LOG_TRACE = 0;
 	/// Debug message level.
@@ -23,6 +25,12 @@ public:
 	static const int LOG_NONE = 5;
 
 	static void Write(int level, std::string message);
+	static void WriteTrace(std::string message);
+	static void WriteDebug(std::string message);
+	static void WriteInfo(std::string message);
+	static void WriteWarning(std::string message);
+	static void WriteError(std::string message);
+
 private:
 	static int logLevel;
 

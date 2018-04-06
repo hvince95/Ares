@@ -19,4 +19,8 @@
     <ClCompile Include="glh\Graphics\Skybox.cpp" />
     <ClCompile Include="glh\IO\FileSystem.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="glh\Shaders\skybox.fs" />
+    <None Include="glh\Shaders\skybox.vs" />
+  </ItemGroup>
 </Project>

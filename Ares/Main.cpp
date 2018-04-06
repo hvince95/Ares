@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
 	if (window == NULL)
 	{
-		std::cout << "Failed to create GLFW window" << std::endl;
+		Log::WriteError("Filed to create GLFW window");
 		glfwTerminate();
 		return -1;
 	}
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 	// ---------------------------------------
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
-		std::cout << "Failed to initialize GLAD" << std::endl;
+		Log::WriteError("Failed to initialize GLAD");
 		return -1;
 	}
 

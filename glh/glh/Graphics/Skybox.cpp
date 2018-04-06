@@ -1,11 +1,15 @@
+#include "Skybox.h"
+
 #include <glad/glad.h>
 #include <stb_image.h>
 
 #include "../IO/FileSystem.h"
+#include "../IO/Log.h"
+
 
 #include <vector>
 
-#include "Skybox.h"
+
 
 void Skybox::Draw() {
 	glBindVertexArray(VAO);
@@ -33,7 +37,6 @@ void Skybox::loadCubemapTexture(std::string skyboxName) {
 		FileSystem::fileRoot + "Data/Skyboxes/" + skyboxName + "/back.jpg"
 	};
 
-
 	glGenTextures(1, &cubemapTexture);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
 
@@ -48,7 +51,7 @@ void Skybox::loadCubemapTexture(std::string skyboxName) {
 		}
 		else
 		{
-			std::cout << "Cubemap texture failed to load at path: " << faces[i].c_str() << std::endl;
+			Log::WriteError("Cubemap texture failed to load at path: " + faces[i]);
 			stbi_image_free(data);
 		}
 	}
@@ -59,10 +62,12 @@ void Skybox::loadCubemapTexture(std::string skyboxName) {
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);	
 }
 
-Skybox::Skybox(std::string skyboxName) {
+Skybox::Skybox(std::string skyboxName, Shader* shader) {
 
 	loadCubemapTexture(skyboxName);
 
+	if (shader == nullptr)
+		Log::WriteTrace("No custom skybox shader passed in, using default");
 
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);

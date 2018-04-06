@@ -2,10 +2,12 @@
 
 #include <iostream>
 
+#include "../Graphics/Shader.h"
+
 class Skybox
 {
 public:
-	Skybox(std::string skyboxName);
+	Skybox(std::string skyboxName, Shader* shader = nullptr);
 	
 	void Draw();
 

@@ -9,9 +9,9 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include <glh/Graphics/Shader.h>
-
+#include "Shader.h"
 #include "Mesh.h"
+#include "../IO/Log.h"
 
 #include <string>
 #include <fstream>
@@ -56,7 +56,7 @@ private:
 		// check for errors
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
 		{
-			std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
+			Log::WriteError("Assimp: " + std::string(importer.GetErrorString()));
 			return;
 		}
 		// retrieve the directory path of the filepath
@@ -233,7 +233,7 @@ unsigned int TextureFromFile(const char *path, const std::string &directory, boo
 	}
 	else
 	{
-		std::cout << "Texture failed to load at path: " << path << std::endl;
+		Log::WriteError("Texture failed to load at path: " + std::string(path));
 		stbi_image_free(data);
 	}
 
