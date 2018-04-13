@@ -35,5 +35,17 @@
     <None Include="..\bin\Data\Shaders\skybox.vs">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="..\bin\Data\Shaders\screenQuad.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\bin\Data\Shaders\screenQuad.vs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\bin\Data\Shaders\pbr.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\bin\Data\Shaders\pbr.vs">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

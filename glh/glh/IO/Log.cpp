@@ -24,7 +24,7 @@ void Log::Write(int level, std::string message)
 	if (level < Log::logLevel)
 		return;
 
-	std::string formattedMessage = "[" + std::to_string(Util::getTime()) + "] " + logLevelPrefixes[level] + ": " + message;
+	std::string formattedMessage = "[" + std::to_string(Util::getTime()) + "] " + logLevelPrefixes[level] + "::" + message;
 	std::cout << formattedMessage << std::endl;
 }
 

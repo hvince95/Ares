@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm\glm.hpp>
+
 #include <iostream>
 
 #include "../Graphics/Shader.h"
@@ -7,15 +9,17 @@
 class Skybox
 {
 public:
-	Skybox(std::string skyboxName, Shader* shader = nullptr);
+	Skybox(std::string skyboxName);
 	
-	void Draw();
+	void Draw(glm::mat3 view, glm::mat4 projection);
 
 private:
 	unsigned int VAO, VBO, EBO;
 	unsigned int cubemapTexture;
 
 	void loadCubemapTexture(std::string skyboxName);
+
+	Shader skyboxShader;
 
 	float vertices[24] = {
 		// positions, Upper, Lower, Back, Front, Left, Right

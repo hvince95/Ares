@@ -11,10 +11,16 @@
 
 
 
-void Skybox::Draw() {
+void Skybox::Draw(glm::mat3 view, glm::mat4 projection) {
+	skyboxShader.use();
+	skyboxShader.setMat4("view", glm::mat4(view));
+	skyboxShader.setMat4("projection", projection);
+
+	glDepthFunc(GL_LEQUAL);
 	glBindVertexArray(VAO);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
+	glDepthFunc(GL_LESS);
 	//glBindVertexArray(0); // no need to unbind it every time as whenever we modify a vertex array we should bind it anyway
 }
 
@@ -62,12 +68,14 @@ void Skybox::loadCubemapTexture(std::string skyboxName) {
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);	
 }
 
-Skybox::Skybox(std::string skyboxName, Shader* shader) {
+Skybox::Skybox(std::string skyboxName) {
 
 	loadCubemapTexture(skyboxName);
 
-	if (shader == nullptr)
-		Log::WriteTrace("No custom skybox shader passed in, using default");
+	skyboxShader = Shader((FileSystem::fileRoot + "Data/Shaders/skybox.vs").c_str(), (FileSystem::fileRoot + "Data/Shaders/skybox.fs").c_str());
+
+	skyboxShader.use();
+	skyboxShader.setInt("skybox", 0);
 
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);

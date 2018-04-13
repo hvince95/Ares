@@ -158,6 +158,7 @@
   <ItemGroup>
     <ClInclude Include="glh\Core\Util.h" />
     <ClInclude Include="glh\Graphics\Camera.h" />
+    <ClInclude Include="glh\Graphics\Framebuffer.h" />
     <ClInclude Include="glh\Graphics\Mesh.h" />
     <ClInclude Include="glh\Graphics\Model.h" />
     <ClInclude Include="glh\Graphics\Shader.h" />
@@ -168,15 +169,13 @@
   <ItemGroup>
     <ClCompile Include="glh\Core\Util.cpp" />
     <ClCompile Include="glh\Graphics\Camera.cpp" />
+    <ClCompile Include="glh\Graphics\Framebuffer.cpp" />
+    <ClCompile Include="glh\Graphics\Shader.cpp" />
     <ClCompile Include="glh\Graphics\Skybox.cpp" />
     <ClCompile Include="glh\IO\FileSystem.cpp" />
     <ClCompile Include="glh\IO\Log.cpp" />
     <ClCompile Include="glh\ThirdParty\glad.c" />
     <ClCompile Include="glh\ThirdParty\stb_image.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="glh\Shaders\skybox.fs" />
-    <None Include="glh\Shaders\skybox.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -9,6 +9,7 @@
     <ClInclude Include="glh\Core\Util.h" />
     <ClInclude Include="glh\Graphics\Skybox.h" />
     <ClInclude Include="glh\IO\FileSystem.h" />
+    <ClInclude Include="glh\Graphics\Framebuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glh\Graphics\Camera.cpp" />
@@ -18,9 +19,7 @@
     <ClCompile Include="glh\Core\Util.cpp" />
     <ClCompile Include="glh\Graphics\Skybox.cpp" />
     <ClCompile Include="glh\IO\FileSystem.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="glh\Shaders\skybox.fs" />
-    <None Include="glh\Shaders\skybox.vs" />
+    <ClCompile Include="glh\Graphics\Framebuffer.cpp" />
+    <ClCompile Include="glh\Graphics\Shader.cpp" />
   </ItemGroup>
 </Project>

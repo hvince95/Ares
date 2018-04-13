@@ -9,6 +9,7 @@
 #include <glh/Graphics/Camera.h>
 #include <glh/Graphics/Model.h>
 #include <glh/Graphics/Skybox.h>
+#include <glh/Graphics/Framebuffer.h>
 #include <glh/IO/Log.h>
 #include <glh/IO/FileSystem.h>
 
@@ -49,7 +50,6 @@ int main(int argc, char *argv[])
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-	glfwWindowHint(GLFW_SAMPLES, 4); // multisampling
 
 #ifdef __APPLE__
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
@@ -92,18 +92,23 @@ int main(int argc, char *argv[])
 	// build and compile shaders	
 	// -------------------------
 	Shader ourShader((fileRoot + "Data/Shaders/vertex.vs").c_str(), (fileRoot + "Data/Shaders/fragment.fs").c_str());
-	Shader skyboxShader((fileRoot + "Data/Shaders/skybox.vs").c_str(), (fileRoot + "Data/Shaders/skybox.fs").c_str());
 
 	// load models
 	// -----------
 	Model ourModel(fileRoot + "Data/Models/nanosuit/nanosuit.obj");
 	Skybox skyboxObject = Skybox("OceanIslands");
-
-	skyboxShader.use();
-	skyboxShader.setInt("skybox", 0);
+	
+	// framebuffer
+	Framebuffer frameBuffer(SCR_WIDTH, SCR_HEIGHT);
 
 	int frames = 0;
 	float lastFPS = (float)glfwGetTime();
+
+
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+
 	// render loop
 	// -----------
 	while (!glfwWindowShouldClose(window))
@@ -135,7 +140,8 @@ int main(int argc, char *argv[])
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
 
-		
+		frameBuffer.Bind();
+		frameBuffer.Clear();
 
 		ourShader.use();
 		ourShader.setMat4("projection", projection);
@@ -150,12 +156,10 @@ int main(int argc, char *argv[])
 		}
 
 		// render the skybox
-		glDepthFunc(GL_LEQUAL);
-		skyboxShader.use();
-		skyboxShader.setMat4("view", glm::mat4(glm::mat3(camera.GetViewMatrix())));
-		skyboxShader.setMat4("projection", projection);
-		skyboxObject.Draw();
-		glDepthFunc(GL_LESS);
+		skyboxObject.Draw(camera.GetViewMatrix(), projection);
+
+		frameBuffer.Unbind();
+		frameBuffer.DrawToScreen();
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
