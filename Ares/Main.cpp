@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/random.hpp>
 
 #include <glh/Graphics/Shader.h>
 #include <glh/Graphics/Camera.h>
@@ -106,11 +107,11 @@ int main(int argc, char *argv[])
 
 	// load PBR material textures
 	// --------------------------
-	unsigned int albedo = loadTexture((fileRoot + "Data/Textures/PBR/rusted_iron/albedo.png").c_str());
-	unsigned int normal = loadTexture((fileRoot + "Data/Textures/PBR/rusted_iron/normal.png").c_str());
-	unsigned int metallic = loadTexture((fileRoot + "Data/Textures/PBR/rusted_iron/metallic.png").c_str());
-	unsigned int roughness = loadTexture((fileRoot + "Data/Textures/PBR/rusted_iron/roughness.png").c_str());
-	unsigned int ao = loadTexture((fileRoot + "Data/Textures/PBR/rusted_iron/ao.png").c_str());
+	unsigned int albedo = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/albedo.png").c_str());
+	unsigned int normal = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/normal.png").c_str());
+	unsigned int metallic = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/metallic.png").c_str());
+	unsigned int roughness = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/roughness.png").c_str());
+	unsigned int ao = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/ao.png").c_str());
 
 
 	// pbr setup
@@ -129,6 +130,10 @@ int main(int argc, char *argv[])
 	int nrRows = 7;
 	int nrColumns = 7;
 	float spacing = 2.5;
+	float rotation[49];
+	for (int i = 0; i < 49; i++) {
+		rotation[i] = glm::linearRand(0, 360);
+	}
 
 	// load models
 	// -----------
@@ -206,6 +211,7 @@ int main(int argc, char *argv[])
 					(float)(row - (nrRows / 2)) * spacing,
 					0.0f
 				));
+				model = glm::rotate(model, rotation[row*7+col], glm::vec3(0, 1, 0));
 				pbrShader.setMat4("model", model);
 				renderSphere();
 			}
