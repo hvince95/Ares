@@ -10,6 +10,7 @@ uniform sampler2D normalMap;
 uniform sampler2D metallicMap;
 uniform sampler2D roughnessMap;
 uniform sampler2D aoMap;
+uniform sampler2D dispMap;
 
 // lights
 uniform vec3 lightPositions[4];
@@ -82,6 +83,14 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 // ----------------------------------------------------------------------------
 void main()
 {		
+	// parallax calcs
+
+
+
+
+
+	// end of parallax calcs
+
     vec3 albedo     = pow(texture(albedoMap, TexCoords).rgb, vec3(2.2));
     float metallic  = texture(metallicMap, TexCoords).r;
     float roughness = texture(roughnessMap, TexCoords).r;
@@ -97,14 +106,17 @@ void main()
 
     // reflectance equation
     vec3 Lo = vec3(0.0);
+
+	// for each light in the scene
     for(int i = 0; i < 4; ++i) 
     {
         // calculate per-light radiance
         vec3 L = normalize(lightPositions[i] - WorldPos);
         vec3 H = normalize(V + L);
-        float distance = length(lightPositions[i] - WorldPos);
+
+        float distance    = length(lightPositions[i] - WorldPos);
         float attenuation = 1.0 / (distance * distance);
-        vec3 radiance = lightColors[i] * attenuation;
+        vec3 radiance     = lightColors[i] * attenuation;
 
         // Cook-Torrance BRDF
         float NDF = DistributionGGX(N, H, roughness);   
@@ -113,7 +125,7 @@ void main()
            
         vec3 nominator    = NDF * G * F; 
         float denominator = 4 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001; // 0.001 to prevent divide by zero.
-        vec3 specular = nominator / denominator;
+        vec3 specular     = nominator / denominator;
         
         // kS is equal to Fresnel
         vec3 kS = F;
@@ -137,12 +149,12 @@ void main()
     // this ambient lighting with environment lighting).
     vec3 ambient = vec3(0.03) * albedo * ao;
     
-    vec3 color = ambient + Lo;
+    vec3 color   = ambient + Lo;
 
     // HDR tonemapping
     color = color / (color + vec3(1.0));
     // gamma correct
-    color = pow(color, vec3(1.0/2.2)); 
+    color = pow(color, vec3(1.0/2.2));
 
     FragColor = vec4(color, 1.0);
 }

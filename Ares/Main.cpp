@@ -104,6 +104,7 @@ int main(int argc, char *argv[])
 	pbrShader.setInt("metallicMap", 2);
 	pbrShader.setInt("roughnessMap", 3);
 	pbrShader.setInt("aoMap", 4);
+	pbrShader.setInt("dispMap", 5);
 
 	// load PBR material textures
 	// --------------------------
@@ -112,6 +113,7 @@ int main(int argc, char *argv[])
 	unsigned int metallic = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/metallic.png").c_str());
 	unsigned int roughness = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/roughness.png").c_str());
 	unsigned int ao = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/ao.png").c_str());
+	unsigned int displacement = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/displacement.png").c_str());
 
 
 	// pbr setup
@@ -127,8 +129,8 @@ int main(int argc, char *argv[])
 	glm::vec3 lightColors[] = {
 		glm::vec3(150.0f, 150.0f, 150.0f),
 	};
-	int nrRows = 7;
-	int nrColumns = 7;
+	int nrRows = 1;
+	int nrColumns = 1;
 	float spacing = 2.5;
 	float rotation[49];
 	for (int i = 0; i < 49; i++) {
@@ -176,12 +178,14 @@ int main(int argc, char *argv[])
 
 		// render
 		// ------
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		
+
+		frameBuffer.Bind();
+		frameBuffer.Clear();
+		
+		glClearColor(0.1f, 0.1f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		//frameBuffer.Bind();
-		//frameBuffer.Clear();
-
+		
 		view = camera.GetViewMatrix();
 		pbrShader.use();
 		pbrShader.setMat4("projection", projection);
@@ -198,6 +202,8 @@ int main(int argc, char *argv[])
 		glBindTexture(GL_TEXTURE_2D, roughness);
 		glActiveTexture(GL_TEXTURE4);
 		glBindTexture(GL_TEXTURE_2D, ao);
+		glActiveTexture(GL_TEXTURE5);
+		glBindTexture(GL_TEXTURE_2D, displacement);
 
 		// render rows*column number of spheres with material properties defined by textures (they all have the same material properties)
 		glm::mat4 model;
@@ -223,7 +229,6 @@ int main(int argc, char *argv[])
 		for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
 		{
 			glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
-			newPos = lightPositions[i];
 			pbrShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
 			pbrShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
 
@@ -238,8 +243,8 @@ int main(int argc, char *argv[])
 		// render the skybox
 		//skyboxObject.Draw(camera.GetViewMatrix(), projection);
 
-		//frameBuffer.Unbind();
-		//frameBuffer.DrawToScreen();
+		frameBuffer.Unbind();
+		frameBuffer.DrawToScreen();
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
@@ -270,6 +275,8 @@ void renderSphere()
 		std::vector<glm::vec3> positions;
 		std::vector<glm::vec2> uv;
 		std::vector<glm::vec3> normals;
+		std::vector<glm::vec3> tangents;
+		std::vector<glm::vec3> bitangents;
 		std::vector<unsigned int> indices;
 
 		const unsigned int X_SEGMENTS = 64;
@@ -312,7 +319,37 @@ void renderSphere()
 			}
 			oddRow = !oddRow;
 		}
-		indexCount = indices.size();
+		indexCount = indices.size() - 1;		
+
+		// tangent space calculation
+		for (int i = 0; i < indexCount; i += 3) {
+			glm::vec3 tangent;
+			glm::vec3 bitangent;
+
+			int pos1index = indices.at(i + 0);
+			int pos2index = indices.at(i + 1);
+			int pos3index = indices.at(i + 2);
+
+			glm::vec3 edge1 = positions.at(pos2index) - positions.at(pos1index);
+			glm::vec3 edge2 = positions.at(pos3index) - positions.at(pos1index);
+			glm::vec2 deltaUV1 = uv.at(pos2index) - uv.at(pos1index);
+			glm::vec2 deltaUV2 = uv.at(pos3index) - uv.at(pos1index);
+
+			float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+			tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+			tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+			tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+			tangent = glm::normalize(tangent);
+
+			bitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+			bitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+			bitangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+			bitangent = glm::normalize(bitangent);
+
+			tangents.push_back(tangent);
+			bitangents.push_back(bitangent);
+		}
 
 		std::vector<float> data;
 		for (int i = 0; i < positions.size(); ++i)
@@ -331,19 +368,36 @@ void renderSphere()
 				data.push_back(normals[i].y);
 				data.push_back(normals[i].z);
 			}
+			/*if (tangents.size() > 0)
+			{
+				data.push_back(tangents[i].x);
+				data.push_back(tangents[i].y);
+				data.push_back(tangents[i].z);
+			}
+			if (bitangents.size() > 0)
+			{
+				data.push_back(bitangents[i].x);
+				data.push_back(bitangents[i].y);
+				data.push_back(bitangents[i].z);
+			}*/
 		}
 		glBindVertexArray(sphereVAO);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), &data[0], GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 		float stride = (3 + 2 + 3) * sizeof(float);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
-		glEnableVertexAttribArray(1);
+		//float stride = (3 + 2 + 3 + 3 + 3) * sizeof(float);
+		glEnableVertexAttribArray(0);// positions
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);					
+		glEnableVertexAttribArray(1);// uv
 		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
-		glEnableVertexAttribArray(2);
+		glEnableVertexAttribArray(2);// normlas
 		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride, (void*)(5 * sizeof(float)));
+		//glEnableVertexAttribArray(3);// tangents
+		//glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, stride, (void*)(8 * sizeof(float)));
+		//glEnableVertexAttribArray(4);// bitangents
+		//glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, stride, (void*)(11 * sizeof(float)));
 	}
 
 	glBindVertexArray(sphereVAO);
