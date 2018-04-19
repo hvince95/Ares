@@ -1,5 +1,7 @@
 #version 330 core
+
 out vec4 FragColor;
+
 in vec2 TexCoords;
 in vec3 WorldPos;
 in vec3 Normal;
@@ -10,6 +12,7 @@ uniform sampler2D normalMap;
 uniform sampler2D metallicMap;
 uniform sampler2D roughnessMap;
 uniform sampler2D aoMap;
+uniform sampler2D depthMap;
 
 // lights
 uniform vec3 lightPositions[4];
@@ -18,26 +21,34 @@ uniform vec3 lightColors[4];
 uniform vec3 camPos;
 
 const float PI = 3.14159265359;
+const float heightScale = 0.1;
+
+// ----------------------------------------------------------------------------
+// easy trick to get tangent-normals to world-space. Eventually this should be
+// calculated and stored on the CPU and passed into the shader.
+mat3 getTBN() {
+	vec3 Q1  = dFdx(WorldPos);
+    vec3 Q2  = dFdy(WorldPos);
+    vec2 st1 = dFdx(TexCoords);
+    vec2 st2 = dFdy(TexCoords);
+
+	vec3 N   = normalize(Normal);
+    vec3 T  = normalize(Q1*st2.t - Q2*st1.t);
+    vec3 B  = -normalize(cross(N, T));
+    mat3 TBN = mat3(T, B, N);
+
+	return TBN;
+}
 // ----------------------------------------------------------------------------
 // Easy trick to get tangent-normals to world-space to keep PBR code simplified.
 // Don't worry if you don't get what's going on; you generally want to do normal 
 // mapping the usual way for performance anways; I do plan make a note of this 
 // technique somewhere later in the normal mapping tutorial.
-vec3 getNormalFromMap()
+vec3 getNormalFromMap(vec2 textureCoords)
 {
-    vec3 tangentNormal = texture(normalMap, TexCoords).xyz * 2.0 - 1.0;
+    vec3 tangentNormal = texture(normalMap, textureCoords).xyz * 2.0 - 1.0;
 
-    vec3 Q1  = dFdx(WorldPos);
-    vec3 Q2  = dFdy(WorldPos);
-    vec2 st1 = dFdx(TexCoords);
-    vec2 st2 = dFdy(TexCoords);
-
-    vec3 N   = normalize(Normal);
-    vec3 T  = normalize(Q1*st2.t - Q2*st1.t);
-    vec3 B  = -normalize(cross(N, T));
-    mat3 TBN = mat3(T, B, N);
-
-    return normalize(TBN * tangentNormal);
+    return normalize(getTBN() * tangentNormal);
 }
 // ----------------------------------------------------------------------------
 float DistributionGGX(vec3 N, vec3 H, float roughness)
@@ -80,14 +91,42 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
     return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
 // ----------------------------------------------------------------------------
+vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
+{ 
+    float height =  texture(depthMap, texCoords).r;    
+    vec2 p = viewDir.xy / viewDir.z * (height * heightScale);
+    return texCoords - p;    
+} 
+
+// ----------------------------------------------------------------------------
 void main()
 {		
-    vec3 albedo     = pow(texture(albedoMap, TexCoords).rgb, vec3(2.2));
+	// parallax mapping
+	mat3 TBN = getTBN();
+	vec3 TangentLightPos = TBN * lightPositions[0];
+    vec3 TangentViewPos  = TBN * camPos;
+    vec3 TangentFragPos  = TBN * WorldPos;
+
+	// offset texture coordinates with Parallax Mapping
+    vec3 viewDir    = normalize(TangentViewPos - TangentFragPos);
+	vec2 parallaxTexCoords  = ParallaxMapping(TexCoords, viewDir);
+
+	// if we are viewing off the texture, discard this fragment.
+	// doesnt work for a sphere! only a flat plane
+	//if(parallaxTexCoords.x > 1.0 || parallaxTexCoords.y > 1.0 || parallaxTexCoords.x < 0.0 || parallaxTexCoords.y < 0.0)
+    //    discard;
+
+    // then proceed with lighting code
+	
+	// end of parallax
+
+
+    vec3  albedo    = pow(texture(albedoMap, TexCoords).rgb, vec3(2.2));
     float metallic  = texture(metallicMap, TexCoords).r;
     float roughness = texture(roughnessMap, TexCoords).r;
     float ao        = texture(aoMap, TexCoords).r;
 
-    vec3 N = getNormalFromMap();
+    vec3 N = getNormalFromMap(TexCoords);
     vec3 V = normalize(camPos - WorldPos);
 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 

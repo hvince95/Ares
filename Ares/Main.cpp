@@ -104,6 +104,7 @@ int main(int argc, char *argv[])
 	pbrShader.setInt("metallicMap", 2);
 	pbrShader.setInt("roughnessMap", 3);
 	pbrShader.setInt("aoMap", 4);
+	pbrShader.setInt("depthMap", 5);
 
 	// load PBR material textures
 	// --------------------------
@@ -112,7 +113,7 @@ int main(int argc, char *argv[])
 	unsigned int metallic = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/metallic.png").c_str());
 	unsigned int roughness = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/roughness.png").c_str());
 	unsigned int ao = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/ao.png").c_str());
-	unsigned int displacement = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/displacement.png").c_str());
+	unsigned int depth = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/depth.png").c_str());
 
 
 	// pbr setup
@@ -201,6 +202,8 @@ int main(int argc, char *argv[])
 		glBindTexture(GL_TEXTURE_2D, roughness);
 		glActiveTexture(GL_TEXTURE4);
 		glBindTexture(GL_TEXTURE_2D, ao);
+		glActiveTexture(GL_TEXTURE5);
+		glBindTexture(GL_TEXTURE_2D, depth);
 
 		// render rows*column number of spheres with material properties defined by textures (they all have the same material properties)
 		glm::mat4 model;
@@ -219,6 +222,7 @@ int main(int argc, char *argv[])
 				renderSphere();
 			}
 		}
+
 
 		// render light source (simply re-render sphere at light positions)
 		// this looks a bit off as we use the same shader, but it'll make their positions obvious and 
@@ -400,6 +404,8 @@ void renderSphere()
 	glBindVertexArray(sphereVAO);
 	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 }
+
+
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window)
