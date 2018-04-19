@@ -10,6 +10,7 @@ uniform sampler2D normalMap;
 uniform sampler2D metallicMap;
 uniform sampler2D roughnessMap;
 uniform sampler2D aoMap;
+uniform sampler2D dispMap;
 
 // lights
 uniform vec3 lightPositions[4];
@@ -86,6 +87,7 @@ void main()
     float metallic  = texture(metallicMap, TexCoords).r;
     float roughness = texture(roughnessMap, TexCoords).r;
     float ao        = texture(aoMap, TexCoords).r;
+	float disp		= texture(dispMap, TexCoords).r;
 
     vec3 N = getNormalFromMap();
     vec3 V = normalize(camPos - WorldPos);

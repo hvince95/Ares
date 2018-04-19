@@ -40,6 +40,7 @@ Framebuffer::Framebuffer(int width, int height) {
 	// create a color attachment texture
 
 	glGenTextures(1, &textureColorbuffer);
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -70,7 +71,7 @@ void Framebuffer::DrawToScreen() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
 
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // set clear color to white (not really necessery actually, since we won't be able to see behind the quad anyways)
+	glClearColor(1.0f, 0.0f, 1.0f, 1.0f); // set clear color to white (not really necessery actually, since we won't be able to see behind the quad anyways)
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	screenQuadShader.use();

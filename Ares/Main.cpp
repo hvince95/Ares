@@ -104,6 +104,7 @@ int main(int argc, char *argv[])
 	pbrShader.setInt("metallicMap", 2);
 	pbrShader.setInt("roughnessMap", 3);
 	pbrShader.setInt("aoMap", 4);
+	pbrShader.setInt("dispMap", 5);
 
 	// load PBR material textures
 	// --------------------------
@@ -112,7 +113,7 @@ int main(int argc, char *argv[])
 	unsigned int metallic = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/metallic.png").c_str());
 	unsigned int roughness = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/roughness.png").c_str());
 	unsigned int ao = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/ao.png").c_str());
-
+	unsigned int disp = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/displacement.png").c_str());
 
 	// pbr setup
 	pbrShader.use();
@@ -198,6 +199,8 @@ int main(int argc, char *argv[])
 		glBindTexture(GL_TEXTURE_2D, roughness);
 		glActiveTexture(GL_TEXTURE4);
 		glBindTexture(GL_TEXTURE_2D, ao);
+		glActiveTexture(GL_TEXTURE5);
+		glBindTexture(GL_TEXTURE_2D, disp);
 
 		// render rows*column number of spheres with material properties defined by textures (they all have the same material properties)
 		glm::mat4 model;
@@ -223,7 +226,6 @@ int main(int argc, char *argv[])
 		for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
 		{
 			glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
-			newPos = lightPositions[i];
 			pbrShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
 			pbrShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
 
