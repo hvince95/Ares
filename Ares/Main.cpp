@@ -90,9 +90,9 @@ int main(int argc, char *argv[])
 	// -----------------------------
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
-	glFrontFace(GL_CW);
+	glFrontFace(GL_CCW);
 
-	// build and compile shaders	
+	// build and compile shaders
 	// -------------------------
 	Shader ourShader((fileRoot + "Data/Shaders/vertex.vs").c_str(), (fileRoot + "Data/Shaders/fragment.fs").c_str());
 	Shader pbrShader((fileRoot + "Data/Shaders/pbr.vs").c_str(), (fileRoot + "Data/Shaders/pbr.fs").c_str());
@@ -104,7 +104,6 @@ int main(int argc, char *argv[])
 	pbrShader.setInt("metallicMap", 2);
 	pbrShader.setInt("roughnessMap", 3);
 	pbrShader.setInt("aoMap", 4);
-	pbrShader.setInt("dispMap", 5);
 
 	// load PBR material textures
 	// --------------------------
@@ -202,8 +201,6 @@ int main(int argc, char *argv[])
 		glBindTexture(GL_TEXTURE_2D, roughness);
 		glActiveTexture(GL_TEXTURE4);
 		glBindTexture(GL_TEXTURE_2D, ao);
-		glActiveTexture(GL_TEXTURE5);
-		glBindTexture(GL_TEXTURE_2D, displacement);
 
 		// render rows*column number of spheres with material properties defined by textures (they all have the same material properties)
 		glm::mat4 model;
@@ -241,7 +238,7 @@ int main(int argc, char *argv[])
 
 
 		// render the skybox
-		//skyboxObject.Draw(camera.GetViewMatrix(), projection);
+		skyboxObject.Draw(camera.GetViewMatrix(), projection);
 
 		frameBuffer.Unbind();
 		frameBuffer.DrawToScreen();
@@ -305,16 +302,16 @@ void renderSphere()
 			{
 				for (int x = 0; x <= X_SEGMENTS; ++x)
 				{
-					indices.push_back(y       * (X_SEGMENTS + 1) + x);
 					indices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
+					indices.push_back(y       * (X_SEGMENTS + 1) + x);
 				}
 			}
 			else
 			{
 				for (int x = X_SEGMENTS; x >= 0; --x)
 				{
-					indices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
 					indices.push_back(y       * (X_SEGMENTS + 1) + x);
+					indices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
 				}
 			}
 			oddRow = !oddRow;

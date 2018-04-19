@@ -18,6 +18,7 @@ void Skybox::Draw(glm::mat3 view, glm::mat4 projection) {
 
 	glDepthFunc(GL_LEQUAL);
 	glBindVertexArray(VAO);
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
 	glDepthFunc(GL_LESS);
