@@ -22,6 +22,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void renderSphere();
 void renderQuad();
+void renderBentQuad();
 unsigned int loadTexture(const char *path);
 
 // settings
@@ -116,12 +117,12 @@ int main(int argc, char *argv[])
 	unsigned int ao = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/ao.png").c_str());
 	unsigned int depth = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/depth.png").c_str());
 
-	/*unsigned int albedo = loadTexture((fileRoot + "Data/Textures/PBR/brick/albedo.jpg").c_str());
-	unsigned int normal = loadTexture((fileRoot + "Data/Textures/PBR/brick/normal.jpg").c_str());
+	/*unsigned int albedo = loadTexture((fileRoot + "Data/Textures/PBR/toy_box/albedo.png").c_str());
+	unsigned int normal = loadTexture((fileRoot + "Data/Textures/PBR/toy_box/normal.png").c_str());
 	unsigned int metallic = 0;
 	unsigned int roughness = 0;
 	unsigned int ao = 0;
-	unsigned int depth = loadTexture((fileRoot + "Data/Textures/PBR/brick/depth.jpg").c_str());*/
+	unsigned int depth = loadTexture((fileRoot + "Data/Textures/PBR/toy_box/depth.png").c_str());*/
 
 
 	// pbr setup
@@ -138,8 +139,8 @@ int main(int argc, char *argv[])
 	glm::vec3 lightColors[] = {
 		glm::vec3(150.0f, 150.0f, 150.0f),
 	};
-	int nrRows = 1;
-	int nrColumns = 1;
+	int nrRows = 0;
+	int nrColumns = 0;
 	float spacing = 2.5;
 	float rotation[49];
 	for (int i = 0; i < 49; i++) {
@@ -235,7 +236,10 @@ int main(int argc, char *argv[])
 		}
 
 		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(3, 0, 0));
+		pbrShader.setMat4("model", model);
+		renderBentQuad();
+		
+		model = glm::translate(model, glm::vec3(5, 0, 0));
 		pbrShader.setMat4("model", model);
 		renderQuad();
 
@@ -515,6 +519,229 @@ void renderQuad()
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 }
+
+// renders (and builds at first invocation) a sphere
+// -------------------------------------------------
+unsigned int bentQuadVAO = 0;
+unsigned int bentQuadIndexCount;
+void renderBentQuad()
+{
+	if (bentQuadVAO == 0)
+	{
+		glGenVertexArrays(1, &bentQuadVAO);
+
+		unsigned int vbo, ebo;
+		glGenBuffers(1, &vbo);
+		glGenBuffers(1, &ebo);
+
+		std::vector<glm::vec3> positions;
+		std::vector<glm::vec2> uv;
+		std::vector<glm::vec3> normals;
+		std::vector<glm::vec3> tangents;
+		std::vector<glm::vec3> bitangents;
+		std::vector<unsigned int> indices;
+
+		positions.push_back(glm::vec3(0, 3, -0.3));
+		positions.push_back(glm::vec3(1, 3, -0.3));
+		positions.push_back(glm::vec3(2, 3, -0.3));
+		positions.push_back(glm::vec3(3, 3, -0.3));
+		positions.push_back(glm::vec3(0, 2, -0.3));
+		positions.push_back(glm::vec3(1, 2, 0));
+		positions.push_back(glm::vec3(2, 2, 0));
+		positions.push_back(glm::vec3(3, 2, -0.3));
+		positions.push_back(glm::vec3(0, 1, -0.3));
+		positions.push_back(glm::vec3(1, 1, 0));
+		positions.push_back(glm::vec3(2, 1, 0));
+		positions.push_back(glm::vec3(3, 1, -0.3));
+		positions.push_back(glm::vec3(0, 0, -0.3));
+		positions.push_back(glm::vec3(1, 0, -0.3));
+		positions.push_back(glm::vec3(2, 0, -0.3));
+		positions.push_back(glm::vec3(3, 0, -0.3));
+
+
+		normals.push_back(glm::normalize(glm::vec3(-0.2, 0.2, 1)));
+		normals.push_back(glm::normalize(glm::vec3(0, 0.2, 1)));
+		normals.push_back(glm::normalize(glm::vec3(0, 0.2, 1)));
+		normals.push_back(glm::normalize(glm::vec3(0.2, 0.2, 1)));
+		normals.push_back(glm::normalize(glm::vec3(-0.2, 0, 1)));
+		normals.push_back(glm::normalize(glm::vec3(-0.05, 0.05, 1)));
+		normals.push_back(glm::normalize(glm::vec3(0.05, 0.05, 1)));
+		normals.push_back(glm::normalize(glm::vec3(0.2, 0, 1)));
+		normals.push_back(glm::normalize(glm::vec3(-0.2, 0, 1)));
+		normals.push_back(glm::normalize(glm::vec3(-0.05, -0.05, 1)));
+		normals.push_back(glm::normalize(glm::vec3(0.05, -0.05, 1)));
+		normals.push_back(glm::normalize(glm::vec3(0.2, 0, 1)));
+		normals.push_back(glm::normalize(glm::vec3(-0.2, -0.2, 1)));
+		normals.push_back(glm::normalize(glm::vec3(0, -0.2, 1)));
+		normals.push_back(glm::normalize(glm::vec3(0, -0.2, 1)));
+		normals.push_back(glm::normalize(glm::vec3(0.2, -0.2, 1)));
+
+
+		uv.push_back(glm::vec2((float)0 / 3, (float)3 / 3));
+		uv.push_back(glm::vec2((float)1 / 3, (float)3 / 3));
+		uv.push_back(glm::vec2((float)2 / 3, (float)3 / 3));
+		uv.push_back(glm::vec2((float)3 / 3, (float)3 / 3));
+		uv.push_back(glm::vec2((float)0 / 3, (float)2 / 3));
+		uv.push_back(glm::vec2((float)1 / 3, (float)2 / 3));
+		uv.push_back(glm::vec2((float)2 / 3, (float)2 / 3));
+		uv.push_back(glm::vec2((float)3 / 3, (float)2 / 3));
+		uv.push_back(glm::vec2((float)0 / 3, (float)1 / 3));
+		uv.push_back(glm::vec2((float)1 / 3, (float)1 / 3));
+		uv.push_back(glm::vec2((float)2 / 3, (float)1 / 3));
+		uv.push_back(glm::vec2((float)3 / 3, (float)1 / 3));
+		uv.push_back(glm::vec2((float)0 / 3, (float)0 / 3));
+		uv.push_back(glm::vec2((float)1 / 3, (float)0 / 3));
+		uv.push_back(glm::vec2((float)2 / 3, (float)0 / 3));
+		uv.push_back(glm::vec2((float)3 / 3, (float)0 / 3));
+
+		indices.push_back(1 - 1);
+		indices.push_back(5 - 1);
+		indices.push_back(6 - 1);
+		indices.push_back(1 - 1);
+		indices.push_back(6 - 1);
+		indices.push_back(2 - 1);
+
+		indices.push_back(2 - 1);
+		indices.push_back(6 - 1);
+		indices.push_back(7 - 1);
+		indices.push_back(2 - 1);
+		indices.push_back(7 - 1);
+		indices.push_back(3 - 1);
+
+		indices.push_back(3 - 1);
+		indices.push_back(7 - 1);
+		indices.push_back(4 - 1);
+		indices.push_back(7 - 1);
+		indices.push_back(8 - 1);
+		indices.push_back(4 - 1);
+
+		indices.push_back(5 - 1);
+		indices.push_back(9 - 1);
+		indices.push_back(10 - 1);
+		indices.push_back(5 - 1);
+		indices.push_back(10 - 1);
+		indices.push_back(6 - 1);
+
+		indices.push_back(6 - 1);
+		indices.push_back(10 - 1);
+		indices.push_back(11 - 1);
+		indices.push_back(6 - 1);
+		indices.push_back(11 - 1);
+		indices.push_back(7 - 1);
+
+		indices.push_back(7 - 1);
+		indices.push_back(11 - 1);
+		indices.push_back(12 - 1);
+		indices.push_back(7 - 1);
+		indices.push_back(12 - 1);
+		indices.push_back(8 - 1);
+
+		indices.push_back(13 - 1);
+		indices.push_back(10 - 1);
+		indices.push_back(9 - 1);
+		indices.push_back(10 - 1);
+		indices.push_back(13 - 1);
+		indices.push_back(14 - 1);
+			
+		indices.push_back(10 - 1);
+		indices.push_back(14 - 1);
+		indices.push_back(15 - 1);
+		indices.push_back(10 - 1);
+		indices.push_back(15 - 1);
+		indices.push_back(11 - 1);
+
+		indices.push_back(11 - 1);
+		indices.push_back(15 - 1);
+		indices.push_back(16 - 1);
+		indices.push_back(11 - 1);
+		indices.push_back(16 - 1);
+		indices.push_back(12 - 1);
+
+		bentQuadIndexCount = indices.size();
+
+		// tangent space calculation
+		for (int i = 0; i < bentQuadIndexCount; i += 3) {
+			glm::vec3 tangent;
+			glm::vec3 bitangent;
+
+			int pos1index = indices.at(i + 0);
+			int pos2index = indices.at(i + 1);
+			int pos3index = indices.at(i + 2);
+
+			glm::vec3 edge1 = positions.at(pos2index) - positions.at(pos1index);
+			glm::vec3 edge2 = positions.at(pos3index) - positions.at(pos1index);
+			glm::vec2 deltaUV1 = uv.at(pos2index) - uv.at(pos1index);
+			glm::vec2 deltaUV2 = uv.at(pos3index) - uv.at(pos1index);
+
+			float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+			tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+			tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+			tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+			tangent = glm::normalize(tangent);
+
+			bitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+			bitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+			bitangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+			bitangent = glm::normalize(bitangent);
+
+			tangents.push_back(tangent);
+			bitangents.push_back(bitangent);
+		}
+
+		std::vector<float> data;
+		for (int i = 0; i < positions.size(); ++i)
+		{
+			data.push_back(positions[i].x);
+			data.push_back(positions[i].y);
+			data.push_back(positions[i].z);
+			if (normals.size() > 0)
+			{
+				data.push_back(normals[i].x);
+				data.push_back(normals[i].y);
+				data.push_back(normals[i].z);
+			}
+			if (uv.size() > 0)
+			{
+				data.push_back(uv[i].x);
+				data.push_back(uv[i].y);
+			}
+
+			if (tangents.size() > 0)
+			{
+				data.push_back(tangents[i].x);
+				data.push_back(tangents[i].y);
+				data.push_back(tangents[i].z);
+			}
+			if (bitangents.size() > 0)
+			{
+				data.push_back(bitangents[i].x);
+				data.push_back(bitangents[i].y);
+				data.push_back(bitangents[i].z);
+			}
+		}
+		glBindVertexArray(bentQuadVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), &data[0], GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, bentQuadIndexCount * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+		float stride = (3 + 3 + 2 + 3 + 3) * sizeof(float);
+		glEnableVertexAttribArray(0);// positions
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
+		glEnableVertexAttribArray(1);// uv
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(2);// normlas
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float)));
+		glEnableVertexAttribArray(3);// tangents
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, stride, (void*)(8 * sizeof(float)));
+		glEnableVertexAttribArray(4);// bitangents
+		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, stride, (void*)(11 * sizeof(float)));
+	}
+
+	glBindVertexArray(bentQuadVAO);
+	glDrawElements(GL_TRIANGLES, bentQuadIndexCount, GL_UNSIGNED_INT, 0);
+}
+
 
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
