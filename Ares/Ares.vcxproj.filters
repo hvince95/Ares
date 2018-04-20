@@ -47,5 +47,11 @@
     <None Include="..\bin\Data\Shaders\pbr.vs">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="..\bin\Data\Shaders\pbrnoparallax.fs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\bin\Data\Shaders\pbrnoparallax.vs">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

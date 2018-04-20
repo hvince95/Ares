@@ -148,6 +148,8 @@
     <None Include="..\bin\Data\Shaders\fragment.fs" />
     <None Include="..\bin\Data\Shaders\pbr.fs" />
     <None Include="..\bin\Data\Shaders\pbr.vs" />
+    <None Include="..\bin\Data\Shaders\pbrnoparallax.fs" />
+    <None Include="..\bin\Data\Shaders\pbrnoparallax.vs" />
     <None Include="..\bin\Data\Shaders\screenQuad.fs" />
     <None Include="..\bin\Data\Shaders\screenQuad.vs" />
     <None Include="..\bin\Data\Shaders\skybox.fs" />
