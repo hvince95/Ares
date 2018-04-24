@@ -6,7 +6,6 @@
     <ClInclude Include="glh\IO\Log.h" />
     <ClInclude Include="glh\Core\Util.h" />
     <ClInclude Include="glh\Graphics\Skybox.h" />
-    <ClInclude Include="glh\IO\FileSystem.h" />
     <ClInclude Include="glh\Graphics\Framebuffer.h" />
     <ClInclude Include="glh\Graphics\ModelInstanced.h" />
     <ClInclude Include="glh\Graphics\Model.h" />
@@ -18,7 +17,6 @@
     <ClCompile Include="glh\IO\Log.cpp" />
     <ClCompile Include="glh\Core\Util.cpp" />
     <ClCompile Include="glh\Graphics\Skybox.cpp" />
-    <ClCompile Include="glh\IO\FileSystem.cpp" />
     <ClCompile Include="glh\Graphics\Framebuffer.cpp" />
     <ClCompile Include="glh\Graphics\Shader.cpp" />
     <ClCompile Include="glh\Graphics\ModelInstanced.cpp" />

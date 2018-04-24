@@ -163,7 +163,6 @@
     <ClInclude Include="glh\Graphics\Model.h" />
     <ClInclude Include="glh\Graphics\Shader.h" />
     <ClInclude Include="glh\Graphics\Skybox.h" />
-    <ClInclude Include="glh\IO\FileSystem.h" />
     <ClInclude Include="glh\IO\Log.h" />
   </ItemGroup>
   <ItemGroup>
@@ -174,7 +173,6 @@
     <ClCompile Include="glh\Graphics\Model.cpp" />
     <ClCompile Include="glh\Graphics\Shader.cpp" />
     <ClCompile Include="glh\Graphics\Skybox.cpp" />
-    <ClCompile Include="glh\IO\FileSystem.cpp" />
     <ClCompile Include="glh\IO\Log.cpp" />
     <ClCompile Include="glh\ThirdParty\glad.c" />
     <ClCompile Include="glh\ThirdParty\stb_image.cpp" />

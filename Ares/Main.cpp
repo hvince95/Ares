@@ -12,7 +12,6 @@
 #include <glh/Graphics/Framebuffer.h>
 #include <glh/Graphics/Model.h>
 #include <glh/IO/Log.h>
-#include <glh/IO/FileSystem.h>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -24,7 +23,7 @@
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-void renderSphere();
+//void renderSphere();
 void renderQuad();
 void renderBentQuad();
 unsigned int loadTexture(const char *path);
@@ -45,13 +44,6 @@ float lastFrame = 0.0f;
 
 int main(int argc, char *argv[])
 {
-	std::string fileRoot = argv[0]; // filepath location to where the exe was run from.
-	fileRoot.erase(fileRoot.find_last_of("\\/"));
-	std::replace(fileRoot.begin(), fileRoot.end(), '\\', '/');
-	fileRoot.append("/");
-	FileSystem::fileRoot = fileRoot;
-
-	Log::Write(Log::LOG_INFO, "File Root: " + fileRoot);
 	// glfw: initialize and configure
 	// ------------------------------
 	glfwInit();
@@ -100,8 +92,8 @@ int main(int argc, char *argv[])
 
 	// build and compile shaders
 	// -------------------------
-	Shader ourShader((fileRoot + "Data/Shaders/vertex.vs").c_str(), (fileRoot + "Data/Shaders/fragment.fs").c_str());
-	Shader pbrShader((fileRoot + "Data/Shaders/pbr.vs").c_str(), (fileRoot + "Data/Shaders/pbr.fs").c_str());
+	Shader ourShader("Data/Shaders/vertex.vs", "Data/Shaders/fragment.fs");
+	Shader pbrShader("Data/Shaders/pbr.vs", "Data/Shaders/pbr.fs");
 
 
 	pbrShader.use();
@@ -114,12 +106,12 @@ int main(int argc, char *argv[])
 
 	// load PBR material textures
 	// --------------------------
-	unsigned int albedo = loadTexture((fileRoot + "Data/Textures/PBR/octostone/albedo.png").c_str());
-	unsigned int normal = loadTexture((fileRoot + "Data/Textures/PBR/octostone/normal.png").c_str());
-	unsigned int metallic = loadTexture((fileRoot + "Data/Textures/PBR/octostone/metallic.png").c_str());
-	unsigned int roughness = loadTexture((fileRoot + "Data/Textures/PBR/octostone/roughness.png").c_str());
-	unsigned int ao = loadTexture((fileRoot + "Data/Textures/PBR/octostone/ao.png").c_str());
-	unsigned int depth = loadTexture((fileRoot + "Data/Textures/PBR/octostone/depth.png").c_str());
+	unsigned int albedo = loadTexture("Data/Textures/PBR/rocky_dirt/albedo.png");
+	unsigned int normal = loadTexture("Data/Textures/PBR/rocky_dirt/normal.png");
+	unsigned int metallic = loadTexture("Data/Textures/PBR/rocky_dirt/metallic.png");
+	unsigned int roughness = loadTexture("Data/Textures/PBR/rocky_dirt/roughness.png");
+	unsigned int ao = loadTexture("Data/Textures/PBR/rocky_dirt/ao.png");
+	unsigned int depth = loadTexture("Data/Textures/PBR/rocky_dirt/depth.png");
 
 	/*unsigned int albedo = loadTexture((fileRoot + "Data/Textures/PBR/toy_box/albedo.png").c_str());
 	unsigned int normal = loadTexture((fileRoot + "Data/Textures/PBR/toy_box/normal.png").c_str());
@@ -133,7 +125,7 @@ int main(int argc, char *argv[])
 	pbrShader.use();
 	pbrShader.setVec3("albedo", 0.5f, 0.0f, 0.0f);
 	pbrShader.setFloat("ao", 1.0f);
-	pbrShader.setFloat("heightScale", 0.1);
+	pbrShader.setFloat("heightScale", 0.1f);
 
 	// lights
 	// ------
@@ -148,7 +140,7 @@ int main(int argc, char *argv[])
 	float spacing = 2.5;
 	float rotation[49];
 	for (int i = 0; i < 49; i++) {
-		rotation[i] = glm::linearRand(0, 360);
+		rotation[i] = glm::linearRand(0.0f, 360.0f);
 	}
 
 	// load models
@@ -170,9 +162,11 @@ int main(int argc, char *argv[])
 	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 	glm::mat4 view = camera.GetViewMatrix();
 
-	Model pineTree = Model(fileRoot + "Data/Models/tree/pineTree2.obj", "png");
+	Model pineTree = Model("Data/Models/tree/pineTree2.obj", "png");
 	pineTree.LoadTextures(Model::ALBEDO | Model::METALLIC | Model::NORMAL | Model::ROUGHNESS);
 	pineTree.SetupMesh();
+
+	camera.SetMovementSpeed(1.0f);
 
 	// render loop
 	// -----------
@@ -227,7 +221,9 @@ int main(int argc, char *argv[])
 			model = glm::translate(model, newPos);
 			model = glm::scale(model, glm::vec3(0.5f));
 			pbrShader.setMat4("model", model);
-			renderSphere();
+			
+			// the quad is now a massive plane for the ground remember!
+			//renderQuad();
 		}
 
 		glActiveTexture(GL_TEXTURE0);
@@ -257,13 +253,13 @@ int main(int argc, char *argv[])
 				));
 				model = glm::rotate(model, rotation[row * 7 + col], glm::vec3(0, 1, 0));
 				pbrShader.setMat4("model", model);
-				renderSphere();
+				renderQuad();
 			}
 		}
 
 		model = glm::mat4();
 		pbrShader.setMat4("model", model);
-		renderBentQuad();
+		//renderBentQuad();
 
 		/*glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		pbrShader.setFloat("heightScale", 0);
@@ -299,9 +295,12 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
+// This function is incorrect, the number of positions and number
+// of indices dont line up which causes issues when calculating
+// the tangent space.
 // renders (and builds at first invocation) a sphere
 // -------------------------------------------------
-unsigned int sphereVAO = 0;
+/*unsigned int sphereVAO = 0;
 unsigned int sphereIndexCount;
 void renderSphere()
 {
@@ -322,7 +321,10 @@ void renderSphere()
 
 		const unsigned int X_SEGMENTS = 64;
 		const unsigned int Y_SEGMENTS = 64;
-		const float PI = 3.14159265359;
+		const float PI = (float) 3.14159265;
+
+		int count = 0;
+
 		for (unsigned int y = 0; y <= Y_SEGMENTS; ++y)
 		{
 			for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
@@ -336,6 +338,7 @@ void renderSphere()
 				positions.push_back(glm::vec3(xPos, yPos, zPos));
 				uv.push_back(glm::vec2(xSegment, ySegment));
 				normals.push_back(glm::vec3(xPos, yPos, zPos));
+				count++;
 			}
 		}
 
@@ -360,10 +363,10 @@ void renderSphere()
 			}
 			oddRow = !oddRow;
 		}
-		sphereIndexCount = indices.size() - 1;
-
+		sphereIndexCount = indices.size();
+		Log::WriteInfo("Count: " + std::to_string(count) + ", sphereindexcount: " + std::to_string(sphereIndexCount));
 		// tangent space calculation
-		for (int i = 0; i < sphereIndexCount; i += 3) {
+		for (unsigned int i = 0; i < sphereIndexCount; i += 3) {
 			glm::vec3 tangent;
 			glm::vec3 bitangent;
 
@@ -393,7 +396,7 @@ void renderSphere()
 		}
 
 		std::vector<float> data;
-		for (int i = 0; i < positions.size(); ++i)
+		for (unsigned int i = 0; i < positions.size(); ++i)
 		{
 			data.push_back(positions[i].x);
 			data.push_back(positions[i].y);
@@ -428,9 +431,9 @@ void renderSphere()
 		glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), &data[0], GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sphereIndexCount * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
-		float stride = (3 + 3 + 2 + 3 + 3) * sizeof(float);
+		unsigned int stride = (3 + 3 + 2 + 3 + 3) * sizeof(float);
 		glEnableVertexAttribArray(0);// positions
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);					
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
 		glEnableVertexAttribArray(1);// uv
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
 		glEnableVertexAttribArray(2);// normlas
@@ -443,7 +446,7 @@ void renderSphere()
 
 	glBindVertexArray(sphereVAO);
 	glDrawElements(GL_TRIANGLE_STRIP, sphereIndexCount, GL_UNSIGNED_INT, 0);
-}
+}*/
 
 unsigned int quadVAO = 0;
 unsigned int quadVBO;
@@ -463,10 +466,10 @@ void renderQuad()
 		glm::vec3 pos4(50.0f, 0.0f, -50.0f);
 
 		// texture coordinates
-		glm::vec2 uv1(0.0f, 100.0f);
+		glm::vec2 uv1(0.0f, 50.0f);
 		glm::vec2 uv2(0.0f, 0.0f);
-		glm::vec2 uv3(100.0f, 0.0f);
-		glm::vec2 uv4(100.0f, 100.0f);
+		glm::vec2 uv3(50.0f, 0.0f);
+		glm::vec2 uv4(50.0f, 50.0f);
 		// normal vector
 		glm::vec3 nm(0.0f, 1.0f, 0.0f);
 
@@ -685,7 +688,7 @@ void renderBentQuad()
 		bentQuadIndexCount = indices.size();
 
 		// tangent space calculation
-		for (int i = 0; i < bentQuadIndexCount; i += 3) {
+		for (unsigned int i = 0; i < bentQuadIndexCount; i += 3) {
 			glm::vec3 tangent;
 			glm::vec3 bitangent;
 
@@ -715,7 +718,7 @@ void renderBentQuad()
 		}
 
 		std::vector<float> data;
-		for (int i = 0; i < positions.size(); ++i)
+		for (unsigned int i = 0; i < positions.size(); ++i)
 		{
 			data.push_back(positions[i].x);
 			data.push_back(positions[i].y);
@@ -750,7 +753,7 @@ void renderBentQuad()
 		glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), &data[0], GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, bentQuadIndexCount * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
-		float stride = (3 + 3 + 2 + 3 + 3) * sizeof(float);
+		unsigned int stride = (3 + 3 + 2 + 3 + 3) * sizeof(float);
 		glEnableVertexAttribArray(0);// positions
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
 		glEnableVertexAttribArray(1);// uv

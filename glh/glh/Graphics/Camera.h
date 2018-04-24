@@ -76,6 +76,8 @@ public:
 		updateCameraVectors();
 	}
 
+	void SetMovementSpeed(float speed);
+
 	void setShift(bool s);
 
 	// Returns the view matrix calculated using Euler Angles and the LookAt Matrix

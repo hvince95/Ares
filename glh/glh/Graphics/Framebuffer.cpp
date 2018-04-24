@@ -3,7 +3,6 @@
 #include <glad\glad.h>
 
 #include "../IO/Log.h"
-#include "../IO/FileSystem.h"
 
 Framebuffer::Framebuffer(int width, int height) {
 
@@ -30,7 +29,7 @@ Framebuffer::Framebuffer(int width, int height) {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
 	// set up shader
-	screenQuadShader = Shader((FileSystem::fileRoot + "Data/Shaders/screenQuad.vs").c_str(), (FileSystem::fileRoot + "Data/Shaders/screenQuad.fs").c_str());
+	screenQuadShader = Shader("Data/Shaders/screenQuad.vs", "Data/Shaders/screenQuad.fs");
 	screenQuadShader.use();
 	screenQuadShader.setInt("screenTexture", 0);
 

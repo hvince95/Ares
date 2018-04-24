@@ -3,7 +3,6 @@
 #include <glad/glad.h>
 #include <stb_image.h>
 
-#include "../IO/FileSystem.h"
 #include "../IO/Log.h"
 
 
@@ -36,12 +35,12 @@ void Skybox::Draw(glm::mat3 view, glm::mat4 projection) {
 void Skybox::loadCubemapTexture(std::string skyboxName) {
 	std::vector<std::string> faces
 	{
-		FileSystem::fileRoot + "Data/Skyboxes/" + skyboxName + "/right.jpg",
-		FileSystem::fileRoot + "Data/Skyboxes/" + skyboxName + "/left.jpg",
-		FileSystem::fileRoot + "Data/Skyboxes/" + skyboxName + "/top.jpg",
-		FileSystem::fileRoot + "Data/Skyboxes/" + skyboxName + "/bottom.jpg",
-		FileSystem::fileRoot + "Data/Skyboxes/" + skyboxName + "/front.jpg",
-		FileSystem::fileRoot + "Data/Skyboxes/" + skyboxName + "/back.jpg"
+		"Data/Skyboxes/" + skyboxName + "/right.jpg",
+		"Data/Skyboxes/" + skyboxName + "/left.jpg",
+		"Data/Skyboxes/" + skyboxName + "/top.jpg",
+		"Data/Skyboxes/" + skyboxName + "/bottom.jpg",
+		"Data/Skyboxes/" + skyboxName + "/front.jpg",
+		"Data/Skyboxes/" + skyboxName + "/back.jpg"
 	};
 
 	glGenTextures(1, &cubemapTexture);
@@ -73,7 +72,7 @@ Skybox::Skybox(std::string skyboxName) {
 
 	loadCubemapTexture(skyboxName);
 
-	skyboxShader = Shader((FileSystem::fileRoot + "Data/Shaders/skybox.vs").c_str(), (FileSystem::fileRoot + "Data/Shaders/skybox.fs").c_str());
+	skyboxShader = Shader("Data/Shaders/skybox.vs", "Data/Shaders/skybox.fs");
 
 	skyboxShader.use();
 	skyboxShader.setInt("skybox", 0);

@@ -26,6 +26,10 @@ void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
 		Position += Right * velocity;
 }
 
+void Camera::SetMovementSpeed(float speed) {
+	MovementSpeed = speed;
+}
+
 // Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
 void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch)
 {

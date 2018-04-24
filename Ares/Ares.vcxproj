@@ -73,6 +73,7 @@
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IncludePath>D:\Code\stb_image;D:\Code\glm-0.9.8.5\;D:\Code\glfw-3.2.1\include;D:\Code\glad\include;D:\Code\assimp-4.1.0\include;$(SolutionDir)glh\;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Code\glfw-3.2.1\build\src\Debug;D:\Code\assimp-4.1.0\build\code\Release;$(SolutionDir)glh\Lib\;$(LibraryPath)</LibraryPath>
+    <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)bin\</OutDir>
@@ -83,6 +84,7 @@
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IncludePath>D:\Code\stb_image;D:\Code\glm-0.9.8.5\;D:\Code\glfw-3.2.1\include;D:\Code\glad\include;D:\Code\assimp-4.1.0\include;$(SolutionDir)glh\;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Code\glfw-3.2.1\build\src\Debug;D:\Code\assimp-4.1.0\build\code\Release;$(SolutionDir)glh\Lib\;$(LibraryPath)</LibraryPath>
+    <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)bin\</OutDir>
