@@ -24,9 +24,14 @@ vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
 		return texCoords;
 
     // number of depth layers
-    const float minLayers = 6;
-    const float maxLayers = 32;
-    float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), viewDir)));  
+    const float minLayers = 8;
+    const float maxLayers = 48;
+
+	float dotProd = dot(vec3(0.0, 0.0, 1.0), viewDir);
+
+	float numLayers = mix(maxLayers, minLayers, abs(dotProd));  
+    //float numLayers = mix(maxLayers, minLayers, abs(pow(dotProd, 0.4))); 
+	
     // calculate the size of each layer
     float layerDepth = 1.0 / numLayers;
     // depth of current layer
@@ -44,7 +49,7 @@ vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
         // shift texture coordinates along direction of P
         currentTexCoords -= deltaTexCoords;
         // get depthmap value at current texture coordinates
-        currentDepthMapValue = texture(depthMap, currentTexCoords).r;  
+        currentDepthMapValue = texture(depthMap, currentTexCoords).r;
         // get depth of next layer
         currentLayerDepth += layerDepth;  
     }
@@ -65,14 +70,18 @@ vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
 }
 
 void main()
-{           
+{
     // offset texture coordinates with Parallax Mapping
     vec3 viewDir = normalize(fs_in.TangentViewPos - fs_in.TangentFragPos);
     vec2 texCoords = fs_in.TexCoords;
+	if (texCoords.x > 1.0f)
+		texCoords.x -= floor(texCoords.x);
+	if (texCoords.y > 1.0f)
+		texCoords.y -= floor(texCoords.y);
     
-    texCoords = ParallaxMapping(fs_in.TexCoords,  viewDir);       
-    if(texCoords.x > 1.0 || texCoords.y > 1.0 || texCoords.x < 0.0 || texCoords.y < 0.0)
-        discard;
+    texCoords = ParallaxMapping(texCoords,  viewDir);
+    //if(texCoords.x > 1.0 || texCoords.y > 1.0 || texCoords.x < 0.0 || texCoords.y < 0.0)
+        //discard;
 
     // obtain normal from normal map
     vec3 normal = texture(normalMap, texCoords).rgb;

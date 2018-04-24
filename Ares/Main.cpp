@@ -8,11 +8,15 @@
 
 #include <glh/Graphics/Shader.h>
 #include <glh/Graphics/Camera.h>
-#include <glh/Graphics/Model.h>
 #include <glh/Graphics/Skybox.h>
 #include <glh/Graphics/Framebuffer.h>
+#include <glh/Graphics/Model.h>
 #include <glh/IO/Log.h>
 #include <glh/IO/FileSystem.h>
+
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 #include <iostream>
 #include <sstream>
@@ -110,12 +114,12 @@ int main(int argc, char *argv[])
 
 	// load PBR material textures
 	// --------------------------
-	unsigned int albedo = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/albedo.png").c_str());
-	unsigned int normal = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/normal.png").c_str());
-	unsigned int metallic = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/metallic.png").c_str());
-	unsigned int roughness = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/roughness.png").c_str());
-	unsigned int ao = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/ao.png").c_str());
-	unsigned int depth = loadTexture((fileRoot + "Data/Textures/PBR/rock_vstreaks/depth.png").c_str());
+	unsigned int albedo = loadTexture((fileRoot + "Data/Textures/PBR/octostone/albedo.png").c_str());
+	unsigned int normal = loadTexture((fileRoot + "Data/Textures/PBR/octostone/normal.png").c_str());
+	unsigned int metallic = loadTexture((fileRoot + "Data/Textures/PBR/octostone/metallic.png").c_str());
+	unsigned int roughness = loadTexture((fileRoot + "Data/Textures/PBR/octostone/roughness.png").c_str());
+	unsigned int ao = loadTexture((fileRoot + "Data/Textures/PBR/octostone/ao.png").c_str());
+	unsigned int depth = loadTexture((fileRoot + "Data/Textures/PBR/octostone/depth.png").c_str());
 
 	/*unsigned int albedo = loadTexture((fileRoot + "Data/Textures/PBR/toy_box/albedo.png").c_str());
 	unsigned int normal = loadTexture((fileRoot + "Data/Textures/PBR/toy_box/normal.png").c_str());
@@ -134,10 +138,10 @@ int main(int argc, char *argv[])
 	// lights
 	// ------
 	glm::vec3 lightPositions[] = {
-		glm::vec3(0.0f, 0.0f, 10.0f),
+		glm::vec3(0.0f, 50.0f, 10.0f),
 	};
 	glm::vec3 lightColors[] = {
-		glm::vec3(150.0f, 150.0f, 150.0f),
+		glm::vec3(400.0f, 400.0f, 400.0f),
 	};
 	int nrRows = 0;
 	int nrColumns = 0;
@@ -161,9 +165,14 @@ int main(int argc, char *argv[])
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+
 	glm::mat4 model;
 	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 	glm::mat4 view = camera.GetViewMatrix();
+
+	Model pineTree = Model(fileRoot + "Data/Models/tree/pineTree2.obj", "png");
+	pineTree.LoadTextures(Model::ALBEDO | Model::METALLIC | Model::NORMAL | Model::ROUGHNESS);
+	pineTree.SetupMesh();
 
 	// render loop
 	// -----------
@@ -204,6 +213,23 @@ int main(int argc, char *argv[])
 		pbrShader.setVec3("viewPos", camera.Position);
 		pbrShader.setVec3("lightPos", lightPositions[0]);
 
+		// render light source (simply re-render sphere at light positions)
+		// this looks a bit off as we use the same shader, but it'll make their positions obvious and 
+		// keeps the codeprint small.
+		for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
+		{
+			glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
+			pbrShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
+			pbrShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
+			pbrShader.setVec3("lightPos", newPos);
+
+			model = glm::mat4();
+			model = glm::translate(model, newPos);
+			model = glm::scale(model, glm::vec3(0.5f));
+			pbrShader.setMat4("model", model);
+			renderSphere();
+		}
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, albedo);
 		glActiveTexture(GL_TEXTURE1);
@@ -229,7 +255,7 @@ int main(int argc, char *argv[])
 					(float)(row - (nrRows / 2)) * spacing,
 					0.0f
 				));
-				model = glm::rotate(model, rotation[row*7+col], glm::vec3(0, 1, 0));
+				model = glm::rotate(model, rotation[row * 7 + col], glm::vec3(0, 1, 0));
 				pbrShader.setMat4("model", model);
 				renderSphere();
 			}
@@ -238,29 +264,22 @@ int main(int argc, char *argv[])
 		model = glm::mat4();
 		pbrShader.setMat4("model", model);
 		renderBentQuad();
+
+		/*glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		pbrShader.setFloat("heightScale", 0);
+		renderBentQuad();
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		pbrShader.setFloat("heightScale", 0.1);*/
 		
 		model = glm::translate(model, glm::vec3(5, 0, 0));
 		pbrShader.setMat4("model", model);
 		renderQuad();
-
 		
-
-		// render light source (simply re-render sphere at light positions)
-		// this looks a bit off as we use the same shader, but it'll make their positions obvious and 
-		// keeps the codeprint small.
-		for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
-		{
-			glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
-			pbrShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
-			pbrShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
-
-			model = glm::mat4();
-			model = glm::translate(model, newPos);
-			model = glm::scale(model, glm::vec3(0.5f));
-			pbrShader.setMat4("model", model);
-			renderSphere();
-		}
-
+		pbrShader.setFloat("heightScale", 0.0f);
+		model = glm::mat4();
+		pbrShader.setMat4("model", model);
+		pineTree.Draw();
+		pbrShader.setFloat("heightScale", 0.1f);
 
 		// render the skybox
 		skyboxObject.Draw(camera.GetViewMatrix(), projection);
@@ -433,17 +452,23 @@ void renderQuad()
 	if (quadVAO == 0)
 	{
 		// positions
-		glm::vec3 pos1(-1.0f, 1.0f, 0.0f);
-		glm::vec3 pos2(-1.0f, -1.0f, 0.0f);
-		glm::vec3 pos3(1.0f, -1.0f, 0.0f);
-		glm::vec3 pos4(1.0f, 1.0f, 0.0f);
+		/*glm::vec3 pos1(-1.0f, 0.0f, -1.0f);
+		glm::vec3 pos2(-1.0f, 0.0f, 1.0f);
+		glm::vec3 pos3(1.0f, 0.0f, 1.0f);
+		glm::vec3 pos4(1.0f, 0.0f, -1.0f);*/
+
+		glm::vec3 pos1(-50.0f, 0.0f, -50.0f);
+		glm::vec3 pos2(-50.0f, 0.0f, 50.0f);
+		glm::vec3 pos3(50.0f, 0.0f, 50.0f);
+		glm::vec3 pos4(50.0f, 0.0f, -50.0f);
+
 		// texture coordinates
-		glm::vec2 uv1(0.0f, 1.0f);
+		glm::vec2 uv1(0.0f, 100.0f);
 		glm::vec2 uv2(0.0f, 0.0f);
-		glm::vec2 uv3(1.0f, 0.0f);
-		glm::vec2 uv4(1.0f, 1.0f);
+		glm::vec2 uv3(100.0f, 0.0f);
+		glm::vec2 uv4(100.0f, 100.0f);
 		// normal vector
-		glm::vec3 nm(0.0f, 0.0f, 1.0f);
+		glm::vec3 nm(0.0f, 1.0f, 0.0f);
 
 		// calculate tangent/bitangent vectors of both triangles
 		glm::vec3 tangent1, bitangent1;

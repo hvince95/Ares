@@ -22,7 +22,7 @@ uniform vec3 viewPos;
 
 void main()
 {
-    vs_out.FragPos = vec3(model * vec4(aPos, 1.0));   
+    vs_out.FragPos = vec3(model * vec4(aPos, 1.0));
     vs_out.TexCoords = aTexCoords;   
     
     vec3 T = normalize(mat3(model) * aTangent);
