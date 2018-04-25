@@ -5,18 +5,42 @@
 #include <assimp/postprocess.h>
 #include <glad/glad.h>
 
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "../IO/Log.h"
-
-
 
 
 Model::Model(std::string const &path, std::string textureFormat, bool gamma) : gammaCorrection(gamma), texFormat(textureFormat)
 {
 	LoadModel(path);
+	SetupMesh();
 }
 
-void Model::Draw()
+void Model::SetPosition(float posX, float posY, float posZ) {
+	position = glm::vec3(posX, posY, posZ);
+
+	modelMatrix = glm::mat4();
+	modelMatrix = glm::translate(modelMatrix, position);
+
+	modelMatrix = glm::rotate(modelMatrix, rotation.x, glm::vec3(1, 0, 0));
+	modelMatrix = glm::rotate(modelMatrix, rotation.y, glm::vec3(0, 1, 0));
+	modelMatrix = glm::rotate(modelMatrix, rotation.z, glm::vec3(0, 0, 1));
+}
+void Model::SetRotation(float rotX, float rotY, float rotZ) {
+	rotation = glm::vec3(rotX, rotY, rotZ);
+
+	modelMatrix = glm::mat4();
+	modelMatrix = glm::translate(modelMatrix, position);
+
+	modelMatrix = glm::rotate(modelMatrix, rotation.x, glm::vec3(1, 0, 0));
+	modelMatrix = glm::rotate(modelMatrix, rotation.y, glm::vec3(0, 1, 0));
+	modelMatrix = glm::rotate(modelMatrix, rotation.z, glm::vec3(0, 0, 1));
+}
+
+void Model::Draw(Shader* shader)
 {
+	shader->setMat4("model", modelMatrix);
+
 	for (unsigned int i = 0; i < 6; i++)
 	{
 		if (textureMaps[i] == 0) // if we dont have  texture for this spot.

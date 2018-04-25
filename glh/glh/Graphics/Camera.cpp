@@ -26,6 +26,11 @@ void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
 		Position += Right * velocity;
 }
 
+void Camera::SetPosition(float posX, float posY, float posZ)
+{
+	Position = glm::vec3(posX, posY, posZ);
+}
+
 void Camera::SetMovementSpeed(float speed) {
 	MovementSpeed = speed;
 }

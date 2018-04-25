@@ -162,11 +162,18 @@ int main(int argc, char *argv[])
 	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 	glm::mat4 view = camera.GetViewMatrix();
 
+	
 	Model pineTree = Model("Data/Models/tree/pineTree2.obj", "png");
 	pineTree.LoadTextures(Model::ALBEDO | Model::METALLIC | Model::NORMAL | Model::ROUGHNESS);
-	pineTree.SetupMesh();
+	glm::vec3 positions[400];
+	glm::vec3 rotations[400];
+	for (int i = 0; i < 400; i++) {
+		positions[i] = glm::vec3(glm::linearRand(-40.0f, 40.0f), 0, glm::linearRand(-40.0f, 40.0f));
+		rotations[i] = glm::vec3(0, glm::linearRand(-3.1415f, 3.1415f), 0);
+	}
 
 	camera.SetMovementSpeed(1.0f);
+	camera.SetPosition(0.0f, 1.8f, 4.0f);
 
 	// render loop
 	// -----------
@@ -257,24 +264,22 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		model = glm::mat4();
-		pbrShader.setMat4("model", model);
+		//model = glm::mat4();
+		//pbrShader.setMat4("model", model);
 		//renderBentQuad();
-
-		/*glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		pbrShader.setFloat("heightScale", 0);
-		renderBentQuad();
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		pbrShader.setFloat("heightScale", 0.1);*/
 		
-		model = glm::translate(model, glm::vec3(5, 0, 0));
+		model = glm::translate(model, glm::vec3(0, 0, 0));
 		pbrShader.setMat4("model", model);
-		renderQuad();
+		renderQuad(); // renders the ground
 		
 		pbrShader.setFloat("heightScale", 0.0f);
-		model = glm::mat4();
-		pbrShader.setMat4("model", model);
-		pineTree.Draw();
+		
+		for (int i = 0; i < 400; i++) {
+			pineTree.SetPosition(positions[i].x, 0, positions[i].z);
+			pineTree.SetRotation(0, rotations[i].y, 0);
+			pineTree.Draw(&pbrShader);
+		}
+		
 		pbrShader.setFloat("heightScale", 0.1f);
 
 		// render the skybox
@@ -294,159 +299,6 @@ int main(int argc, char *argv[])
 	glfwTerminate();
 	return 0;
 }
-
-// This function is incorrect, the number of positions and number
-// of indices dont line up which causes issues when calculating
-// the tangent space.
-// renders (and builds at first invocation) a sphere
-// -------------------------------------------------
-/*unsigned int sphereVAO = 0;
-unsigned int sphereIndexCount;
-void renderSphere()
-{
-	if (sphereVAO == 0)
-	{
-		glGenVertexArrays(1, &sphereVAO);
-
-		unsigned int vbo, ebo;
-		glGenBuffers(1, &vbo);
-		glGenBuffers(1, &ebo);
-
-		std::vector<glm::vec3> positions;
-		std::vector<glm::vec2> uv;
-		std::vector<glm::vec3> normals;
-		std::vector<glm::vec3> tangents;
-		std::vector<glm::vec3> bitangents;
-		std::vector<unsigned int> indices;
-
-		const unsigned int X_SEGMENTS = 64;
-		const unsigned int Y_SEGMENTS = 64;
-		const float PI = (float) 3.14159265;
-
-		int count = 0;
-
-		for (unsigned int y = 0; y <= Y_SEGMENTS; ++y)
-		{
-			for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
-			{
-				float xSegment = (float)x / (float)X_SEGMENTS;
-				float ySegment = (float)y / (float)Y_SEGMENTS;
-				float xPos = std::cos(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
-				float yPos = std::cos(ySegment * PI);
-				float zPos = std::sin(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
-
-				positions.push_back(glm::vec3(xPos, yPos, zPos));
-				uv.push_back(glm::vec2(xSegment, ySegment));
-				normals.push_back(glm::vec3(xPos, yPos, zPos));
-				count++;
-			}
-		}
-
-		bool oddRow = false;
-		for (int y = 0; y < Y_SEGMENTS; ++y)
-		{
-			if (!oddRow) // even rows: y == 0, y == 2; and so on
-			{
-				for (int x = 0; x <= X_SEGMENTS; ++x)
-				{
-					indices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
-					indices.push_back(y       * (X_SEGMENTS + 1) + x);
-				}
-			}
-			else
-			{
-				for (int x = X_SEGMENTS; x >= 0; --x)
-				{
-					indices.push_back(y       * (X_SEGMENTS + 1) + x);
-					indices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
-				}
-			}
-			oddRow = !oddRow;
-		}
-		sphereIndexCount = indices.size();
-		Log::WriteInfo("Count: " + std::to_string(count) + ", sphereindexcount: " + std::to_string(sphereIndexCount));
-		// tangent space calculation
-		for (unsigned int i = 0; i < sphereIndexCount; i += 3) {
-			glm::vec3 tangent;
-			glm::vec3 bitangent;
-
-			int pos1index = indices.at(i + 0);
-			int pos2index = indices.at(i + 1);
-			int pos3index = indices.at(i + 2);
-
-			glm::vec3 edge1 = positions.at(pos2index) - positions.at(pos1index);
-			glm::vec3 edge2 = positions.at(pos3index) - positions.at(pos1index);
-			glm::vec2 deltaUV1 = uv.at(pos2index) - uv.at(pos1index);
-			glm::vec2 deltaUV2 = uv.at(pos3index) - uv.at(pos1index);
-
-			float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-
-			tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
-			tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
-			tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
-			tangent = glm::normalize(tangent);
-
-			bitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
-			bitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
-			bitangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
-			bitangent = glm::normalize(bitangent);
-
-			tangents.push_back(tangent);
-			bitangents.push_back(bitangent);
-		}
-
-		std::vector<float> data;
-		for (unsigned int i = 0; i < positions.size(); ++i)
-		{
-			data.push_back(positions[i].x);
-			data.push_back(positions[i].y);
-			data.push_back(positions[i].z);
-			if (normals.size() > 0)
-			{
-				data.push_back(normals[i].x);
-				data.push_back(normals[i].y);
-				data.push_back(normals[i].z);
-			}
-			if (uv.size() > 0)
-			{
-				data.push_back(uv[i].x);
-				data.push_back(uv[i].y);
-			}
-			
-			if (tangents.size() > 0)
-			{
-				data.push_back(tangents[i].x);
-				data.push_back(tangents[i].y);
-				data.push_back(tangents[i].z);
-			}
-			if (bitangents.size() > 0)
-			{
-				data.push_back(bitangents[i].x);
-				data.push_back(bitangents[i].y);
-				data.push_back(bitangents[i].z);
-			}
-		}
-		glBindVertexArray(sphereVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), &data[0], GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sphereIndexCount * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
-		unsigned int stride = (3 + 3 + 2 + 3 + 3) * sizeof(float);
-		glEnableVertexAttribArray(0);// positions
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
-		glEnableVertexAttribArray(1);// uv
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
-		glEnableVertexAttribArray(2);// normlas
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float)));
-		glEnableVertexAttribArray(3);// tangents
-		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, stride, (void*)(8 * sizeof(float)));
-		glEnableVertexAttribArray(4);// bitangents
-		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, stride, (void*)(11 * sizeof(float)));
-	}
-
-	glBindVertexArray(sphereVAO);
-	glDrawElements(GL_TRIANGLE_STRIP, sphereIndexCount, GL_UNSIGNED_INT, 0);
-}*/
 
 unsigned int quadVAO = 0;
 unsigned int quadVBO;

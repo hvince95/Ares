@@ -8,7 +8,7 @@ ModelInstanced::ModelInstanced(std::string const &path, std::string textureForma
 }
 
 void ModelInstanced::Draw() {
-
+	
 }
 
 void ModelInstanced::AddInstance(glm::vec3 positions, glm::vec3 rotations)

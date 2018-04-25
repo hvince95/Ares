@@ -76,6 +76,8 @@ public:
 		updateCameraVectors();
 	}
 
+	void SetPosition(float posX, float posY, float posZ);
+
 	void SetMovementSpeed(float speed);
 
 	void setShift(bool s);

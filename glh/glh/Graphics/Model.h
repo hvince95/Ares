@@ -6,14 +6,19 @@
 #include <assimp/scene.h>
 #include <glm/glm.hpp>
 
+#include "Shader.h"
+
 
 class Model
 {
 public:
 	Model(std::string const &path, std::string textureFormat, bool gamma = false);
+	void SetPosition(float posX, float posY, float posZ);
+	void SetRotation(float rotX, float rotY, float rotZ);
+
+	// setup
 	void LoadTextures(int textureFlags);
-	void SetupMesh();
-	void Draw();
+	void Draw(Shader* shader);
 
 	enum {
 		ALBEDO = 1 << 0,
@@ -25,12 +30,17 @@ public:
 	};
 
 private:
+	// setup methods
 	void LoadModel(std::string const &path);
 	void ProcessNode(aiNode *node, const aiScene *scene);
 	void ProcessMesh(aiMesh *mesh, const aiScene *scene);
+	void SetupMesh();
 	unsigned int TextureFromFile(const char *name, std::string format, bool gamma = false);
 
-	
+	// Model physical attributes
+	glm::vec3 position;
+	glm::vec3 rotation;
+	glm::mat4 modelMatrix;
 
 	// Model Data
 	std::string directory;
@@ -57,11 +67,4 @@ private:
 	std::vector<unsigned int> indices;
 
 	unsigned int textureMaps[6] = { 0, 0, 0, 0, 0, 0 };
-
-	/*unsigned int albedoMap;
-	unsigned int normalMap;
-	unsigned int roughnessMap;
-	unsigned int metallicMap;
-	unsigned int depthMap;
-	unsigned int AoMap;*/
 };
