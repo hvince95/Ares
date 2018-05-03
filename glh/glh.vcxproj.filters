@@ -7,8 +7,8 @@
     <ClInclude Include="glh\Core\Util.h" />
     <ClInclude Include="glh\Graphics\Skybox.h" />
     <ClInclude Include="glh\Graphics\Framebuffer.h" />
-    <ClInclude Include="glh\Graphics\ModelInstanced.h" />
     <ClInclude Include="glh\Graphics\Model.h" />
+    <ClInclude Include="glh\Graphics\LightBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glh\Graphics\Camera.cpp" />
@@ -19,7 +19,7 @@
     <ClCompile Include="glh\Graphics\Skybox.cpp" />
     <ClCompile Include="glh\Graphics\Framebuffer.cpp" />
     <ClCompile Include="glh\Graphics\Shader.cpp" />
-    <ClCompile Include="glh\Graphics\ModelInstanced.cpp" />
     <ClCompile Include="glh\Graphics\Model.cpp" />
+    <ClCompile Include="glh\Graphics\LightBuffer.cpp" />
   </ItemGroup>
 </Project>

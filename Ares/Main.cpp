@@ -11,6 +11,7 @@
 #include <glh/Graphics/Skybox.h>
 #include <glh/Graphics/Framebuffer.h>
 #include <glh/Graphics/Model.h>
+#include <glh/Graphics/LightBuffer.h>
 #include <glh/IO/Log.h>
 
 #include <assimp/Importer.hpp>
@@ -23,6 +24,7 @@
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
+void renderScene();
 //void renderSphere();
 void renderQuad();
 void renderBentQuad();
@@ -92,8 +94,8 @@ int main(int argc, char *argv[])
 
 	// build and compile shaders
 	// -------------------------
-	Shader ourShader("Data/Shaders/vertex.vs", "Data/Shaders/fragment.fs");
 	Shader pbrShader("Data/Shaders/pbr.vs", "Data/Shaders/pbr.fs");
+	Shader simpleDepthShader("Data/Shaders/simpleDepth.vs", "Data/Shaders/simpleDepth.fs");
 
 
 	pbrShader.use();
@@ -165,15 +167,17 @@ int main(int argc, char *argv[])
 	
 	Model pineTree = Model("Data/Models/tree/pineTree2.obj", "png");
 	pineTree.LoadTextures(Model::ALBEDO | Model::METALLIC | Model::NORMAL | Model::ROUGHNESS);
-	glm::vec3 positions[400];
-	glm::vec3 rotations[400];
-	for (int i = 0; i < 400; i++) {
-		positions[i] = glm::vec3(glm::linearRand(-40.0f, 40.0f), 0, glm::linearRand(-40.0f, 40.0f));
+	glm::vec3 positions[200];
+	glm::vec3 rotations[200];
+	for (int i = 0; i < 200; i++) {
+		positions[i] = glm::vec3(glm::linearRand(-30.0f, 30.0f), 0, glm::linearRand(-30.0f, 30.0f));
 		rotations[i] = glm::vec3(0, glm::linearRand(-3.1415f, 3.1415f), 0);
 	}
 
 	camera.SetMovementSpeed(1.0f);
 	camera.SetPosition(0.0f, 1.8f, 4.0f);
+
+	LightBuffer lightMap = LightBuffer();
 
 	// render loop
 	// -----------
@@ -196,9 +200,39 @@ int main(int argc, char *argv[])
 		// -----
 		processInput(window);
 
-		// render
+		// rendering passes
 		// ------
 		
+		/*
+		/////////////////////////////////////////////////////////////
+		// 1. First, render the scene to the depth map for shadows
+		simpleDepthShader.use();
+		
+		glViewport(0, 0, lightMap.GetShadowBufferWidth(), lightMap.GetShadowBufferHeight());
+		lightMap.Bind();
+
+		// configure shader and matrices
+		float near_plane = 1.0f, far_plane = 7.5f;
+		glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+		glm::mat4 lightView = glm::lookAt(	glm::vec3(-2.0f, 4.0f, -1.0f),
+											glm::vec3(0.0f, 0.0f, 0.0f),
+											glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+
+		simpleDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+		//RenderScene();
+
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
+
+
+
+
+
+		/////////////////////////////////////////////////////////////
+		// 2. Second, render the scene as normal
+		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
 		frameBuffer.Bind();
 		frameBuffer.Clear();
@@ -274,7 +308,7 @@ int main(int argc, char *argv[])
 		
 		pbrShader.setFloat("heightScale", 0.0f);
 		
-		for (int i = 0; i < 400; i++) {
+		for (int i = 0; i < 200; i++) {
 			pineTree.SetPosition(positions[i].x, 0, positions[i].z);
 			pineTree.SetRotation(0, rotations[i].y, 0);
 			pineTree.Draw(&pbrShader);
@@ -282,9 +316,12 @@ int main(int argc, char *argv[])
 		
 		pbrShader.setFloat("heightScale", 0.1f);
 
-		// render the skybox
+		/////////////////////////////////////////////////////////////
+		// 3. render the skybox
 		skyboxObject.Draw(camera.GetViewMatrix(), projection);
 
+		/////////////////////////////////////////////////////////////
+		// 4. render the frame buffer to the screen
 		frameBuffer.Unbind();
 		frameBuffer.DrawToScreen();
 
@@ -298,6 +335,10 @@ int main(int argc, char *argv[])
 	// ------------------------------------------------------------------
 	glfwTerminate();
 	return 0;
+}
+
+void renderScene() {
+
 }
 
 unsigned int quadVAO = 0;

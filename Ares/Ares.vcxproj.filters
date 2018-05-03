@@ -23,12 +23,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\bin\Data\Shaders\fragment.fs">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\bin\Data\Shaders\vertex.vs">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="..\bin\Data\Shaders\skybox.fs">
       <Filter>Shaders</Filter>
     </None>
@@ -51,6 +45,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="..\bin\Data\Shaders\pbrnoparallax.vs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\bin\Data\Shaders\simpleDepth.vs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\bin\Data\Shaders\simpleDepth.fs">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
