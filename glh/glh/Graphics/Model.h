@@ -15,6 +15,10 @@ public:
 	Model(std::string const &path, std::string textureFormat, bool gamma = false);
 	void SetPosition(float posX, float posY, float posZ);
 	void SetRotation(float rotX, float rotY, float rotZ);
+	void SetScale(float scaleX, float scaleY, float scaleZ);
+	unsigned int getVAO();
+	void BindTextures();
+	void SetModelMatrix(glm::mat4 model);
 
 	// setup
 	void LoadTextures(int textureFlags);
@@ -28,6 +32,8 @@ public:
 		DEPTH = 1 << 4,
 		AMBIENTOCCLUSION = 1 << 5
 	};
+	unsigned int textureMaps[6] = { 0, 0, 0, 0, 0, 0 };
+	std::vector<unsigned int> indices;
 
 private:
 	// setup methods
@@ -40,6 +46,7 @@ private:
 	// Model physical attributes
 	glm::vec3 position;
 	glm::vec3 rotation;
+	glm::vec3 scale;
 	glm::mat4 modelMatrix;
 
 	// Model Data
@@ -64,7 +71,5 @@ private:
 	};
 
 	std::vector<Vertex> vertices;
-	std::vector<unsigned int> indices;
-
-	unsigned int textureMaps[6] = { 0, 0, 0, 0, 0, 0 };
+	
 };

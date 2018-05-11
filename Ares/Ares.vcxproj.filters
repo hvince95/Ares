@@ -22,36 +22,4 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\bin\Data\Shaders\skybox.fs">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\bin\Data\Shaders\skybox.vs">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\bin\Data\Shaders\screenQuad.fs">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\bin\Data\Shaders\screenQuad.vs">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\bin\Data\Shaders\pbr.fs">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\bin\Data\Shaders\pbr.vs">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\bin\Data\Shaders\pbrnoparallax.fs">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\bin\Data\Shaders\pbrnoparallax.vs">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\bin\Data\Shaders\simpleDepth.vs">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\bin\Data\Shaders\simpleDepth.fs">
-      <Filter>Shaders</Filter>
-    </None>
-  </ItemGroup>
 </Project>

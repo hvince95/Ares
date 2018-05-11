@@ -16,11 +16,34 @@ Model::Model(std::string const &path, std::string textureFormat, bool gamma) : g
 	SetupMesh();
 }
 
+unsigned int Model::getVAO() {
+	return VAO;
+}
+
+void Model::SetModelMatrix(glm::mat4 model) {
+	modelMatrix = model;
+}
+
+void Model::SetScale(float scaleX, float scaleY, float scaleZ) {
+	scale = glm::vec3(scaleX, scaleY, scaleZ);
+
+	modelMatrix = glm::mat4();
+	modelMatrix = glm::translate(modelMatrix, position);
+
+	modelMatrix = glm::scale(modelMatrix, scale);
+
+	modelMatrix = glm::rotate(modelMatrix, rotation.x, glm::vec3(1, 0, 0));
+	modelMatrix = glm::rotate(modelMatrix, rotation.y, glm::vec3(0, 1, 0));
+	modelMatrix = glm::rotate(modelMatrix, rotation.z, glm::vec3(0, 0, 1));
+}
+
 void Model::SetPosition(float posX, float posY, float posZ) {
 	position = glm::vec3(posX, posY, posZ);
 
 	modelMatrix = glm::mat4();
 	modelMatrix = glm::translate(modelMatrix, position);
+
+	modelMatrix = glm::scale(modelMatrix, scale);
 
 	modelMatrix = glm::rotate(modelMatrix, rotation.x, glm::vec3(1, 0, 0));
 	modelMatrix = glm::rotate(modelMatrix, rotation.y, glm::vec3(0, 1, 0));
@@ -32,6 +55,8 @@ void Model::SetRotation(float rotX, float rotY, float rotZ) {
 	modelMatrix = glm::mat4();
 	modelMatrix = glm::translate(modelMatrix, position);
 
+	modelMatrix = glm::scale(modelMatrix, scale);
+
 	modelMatrix = glm::rotate(modelMatrix, rotation.x, glm::vec3(1, 0, 0));
 	modelMatrix = glm::rotate(modelMatrix, rotation.y, glm::vec3(0, 1, 0));
 	modelMatrix = glm::rotate(modelMatrix, rotation.z, glm::vec3(0, 0, 1));
@@ -41,6 +66,18 @@ void Model::Draw(Shader* shader)
 {
 	shader->setMat4("model", modelMatrix);
 
+	BindTextures();
+
+	// draw mesh
+	glBindVertexArray(VAO);
+	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+
+	// always good practice to set everything back to defaults once configured.
+	glActiveTexture(GL_TEXTURE0);
+}
+
+void Model::BindTextures() {
 	for (unsigned int i = 0; i < 6; i++)
 	{
 		if (textureMaps[i] == 0) // if we dont have  texture for this spot.
@@ -50,14 +87,6 @@ void Model::Draw(Shader* shader)
 		glBindTexture(GL_TEXTURE_2D, textureMaps[i]);
 
 	}
-
-	// draw mesh
-	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
-
-	// always good practice to set everything back to defaults once configured.
-	glActiveTexture(GL_TEXTURE0);
 }
 
 void Model::LoadModel(std::string const &path)

@@ -40,9 +40,10 @@ float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
+
+
 // timing
 float deltaTime = 0.0f;
-float lastFrame = 0.0f;
 
 int main(int argc, char *argv[])
 {
@@ -96,6 +97,7 @@ int main(int argc, char *argv[])
 	// -------------------------
 	Shader pbrShader("Data/Shaders/pbr.vs", "Data/Shaders/pbr.fs");
 	Shader simpleDepthShader("Data/Shaders/simpleDepth.vs", "Data/Shaders/simpleDepth.fs");
+	Shader instanceShader("Data/Shaders/Instanced.vs", "Data/Shaders/Instanced.fs");
 
 
 	pbrShader.use();
@@ -106,6 +108,14 @@ int main(int argc, char *argv[])
 	pbrShader.setInt("aoMap", 4);
 	pbrShader.setInt("depthMap", 5);
 
+	instanceShader.use();
+	instanceShader.setInt("albedoMap", 0);
+	instanceShader.setInt("normalMap", 1);
+	instanceShader.setInt("metallicMap", 2);
+	instanceShader.setInt("roughnessMap", 3);
+	instanceShader.setInt("aoMap", 4);
+	instanceShader.setInt("depthMap", 5);
+
 	// load PBR material textures
 	// --------------------------
 	unsigned int albedo = loadTexture("Data/Textures/PBR/rocky_dirt/albedo.png");
@@ -115,19 +125,16 @@ int main(int argc, char *argv[])
 	unsigned int ao = loadTexture("Data/Textures/PBR/rocky_dirt/ao.png");
 	unsigned int depth = loadTexture("Data/Textures/PBR/rocky_dirt/depth.png");
 
-	/*unsigned int albedo = loadTexture((fileRoot + "Data/Textures/PBR/toy_box/albedo.png").c_str());
-	unsigned int normal = loadTexture((fileRoot + "Data/Textures/PBR/toy_box/normal.png").c_str());
-	unsigned int metallic = 0;
-	unsigned int roughness = 0;
-	unsigned int ao = 0;
-	unsigned int depth = loadTexture((fileRoot + "Data/Textures/PBR/toy_box/depth.png").c_str());*/
-
-
 	// pbr setup
 	pbrShader.use();
 	pbrShader.setVec3("albedo", 0.5f, 0.0f, 0.0f);
 	pbrShader.setFloat("ao", 1.0f);
 	pbrShader.setFloat("heightScale", 0.1f);
+
+	instanceShader.use();
+	instanceShader.setVec3("albedo", 0.5f, 0.0f, 0.0f);
+	instanceShader.setFloat("ao", 1.0f);
+	instanceShader.setFloat("heightScale", 0.0f);
 
 	// lights
 	// ------
@@ -152,46 +159,113 @@ int main(int argc, char *argv[])
 	// framebuffer
 	Framebuffer frameBuffer(SCR_WIDTH, SCR_HEIGHT);
 
-	int frames = 0;
-	float lastFPS = (float)glfwGetTime();
+
 
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 
-	glm::mat4 model;
 	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 	glm::mat4 view = camera.GetViewMatrix();
-
 	
 	Model pineTree = Model("Data/Models/tree/pineTree2.obj", "png");
-	pineTree.LoadTextures(Model::ALBEDO | Model::METALLIC | Model::NORMAL | Model::ROUGHNESS);
-	glm::vec3 positions[200];
-	glm::vec3 rotations[200];
-	for (int i = 0; i < 200; i++) {
-		positions[i] = glm::vec3(glm::linearRand(-30.0f, 30.0f), 0, glm::linearRand(-30.0f, 30.0f));
-		rotations[i] = glm::vec3(0, glm::linearRand(-3.1415f, 3.1415f), 0);
+	//Model pineTree = Model("Data/Models/rock/rock.obj", "jpg");
+	//pineTree.LoadTextures(Model::ALBEDO | Model::METALLIC | Model::NORMAL | Model::ROUGHNESS);
+	pineTree.LoadTextures(Model::ALBEDO);
+	
+	const unsigned int amount = 10;
+	glm::vec3 positions[amount];
+	glm::vec3 rotations[amount];
+	for (int i = 0; i < amount; i++) {
+		positions[i] = glm::vec3(glm::linearRand(-10.0f, 10.0f), 2, glm::linearRand(-10.0f, 10.0f));
+		//rotations[i] = glm::vec3(0, glm::linearRand(-3.1415f, 3.1415f), 0);
+		rotations[i] = glm::vec3(-1.57f, 0, 0);
 	}
+	// generate a large list of semi-random model transformation matrices
+	// ------------------------------------------------------------------
+
+	glm::mat4* modelMatrices;
+	modelMatrices = new glm::mat4[amount];
+	srand(glfwGetTime()); // initialize random seed	
+	float radius = 150.0;
+	float offset = 25.0f;
+	for (unsigned int i = 0; i < amount; i++)
+	{
+		glm::mat4 model;
+
+		glm::vec3 pos = glm::vec3(glm::linearRand(-10.0f, 10.0f), 2, glm::linearRand(-10.0f, 10.0f));
+		
+		model = glm::translate(model, pos);
+		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+		model = glm::rotate(model, -1.57f, glm::vec3(1, 0, 0));
+
+		modelMatrices[i] = model;
+	}
+
+	// configure instanced array
+	// -------------------------
+	unsigned int instancedBuffer;
+	glGenBuffers(1, &instancedBuffer);
+	
+
+	// set transformation matrices as an instance vertex attribute (with divisor 1)
+	// note: we're cheating a little by taking the, now publicly declared, VAO of the model's mesh(es) and adding new vertexAttribPointers
+	// normally you'd want to do this in a more organized fashion, but for learning purposes this will do.
+	// -----------------------------------------------------------------------------------------------------------------------------------
+	unsigned int VAO = pineTree.getVAO();
+	glBindVertexArray(VAO);
+	
+	glBindBuffer(GL_ARRAY_BUFFER, instancedBuffer);
+	glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
+
+	// set attribute pointers for matrix (4 times vec4)
+	glEnableVertexAttribArray(5);
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
+	glEnableVertexAttribArray(6);
+	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+	glEnableVertexAttribArray(7);
+	glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
+	glEnableVertexAttribArray(8);
+	glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
+	
+	glVertexAttribDivisor(5, 1);
+	glVertexAttribDivisor(6, 1);
+	glVertexAttribDivisor(7, 1);
+	glVertexAttribDivisor(8, 1);
+
+	glBindVertexArray(0);
+
+
+
+
 
 	camera.SetMovementSpeed(1.0f);
 	camera.SetPosition(0.0f, 1.8f, 4.0f);
 
 	LightBuffer lightMap = LightBuffer();
 
+
+
+
+
+
+	float lastTime = 0.0f;
+	unsigned int frames = 0;
+	float lastLog = (float)glfwGetTime();
 	// render loop
 	// -----------
 	while (!glfwWindowShouldClose(window))
 	{
 		// per-frame time logic
 		// --------------------
-		float currentFrame = (float)glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
+		float currentTime = (float)glfwGetTime();
+		deltaTime = currentTime - lastTime;
+		lastTime = currentTime;
 
-		if (currentFrame - lastFPS >= 1.0f) {
-			lastFPS += 1.0f;
-			Log::Write(Log::LOG_DEBUG, ("FPS: " + std::to_string(frames)));
+		if (currentTime - lastLog >= 1.0f) {
+			lastLog += 1.0f;
+			Log::Write(Log::LOG_DEBUG, ("FPS: " + std::to_string(frames) + " (" + std::to_string(1000.0/frames) + " ms)"));
 			frames = 0;
 		}
 		frames++;
@@ -248,6 +322,8 @@ int main(int argc, char *argv[])
 		pbrShader.setVec3("viewPos", camera.Position);
 		pbrShader.setVec3("lightPos", lightPositions[0]);
 
+		glm::mat4 model;
+
 		// render light source (simply re-render sphere at light positions)
 		// this looks a bit off as we use the same shader, but it'll make their positions obvious and 
 		// keeps the codeprint small.
@@ -267,6 +343,8 @@ int main(int argc, char *argv[])
 			//renderQuad();
 		}
 
+
+		// start rendering the groubnd
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, albedo);
 		glActiveTexture(GL_TEXTURE1);
@@ -280,41 +358,42 @@ int main(int argc, char *argv[])
 		glActiveTexture(GL_TEXTURE5);
 		glBindTexture(GL_TEXTURE_2D, depth);
 
-		// render rows*column number of spheres with material properties defined by textures (they all have the same material properties)
-		glm::mat4 model;
-		for (int row = 0; row < nrRows; ++row)
-		{
-			for (int col = 0; col < nrColumns; ++col)
-			{
-				model = glm::mat4();
-				model = glm::translate(model, glm::vec3(
-					(float)(col - (nrColumns / 2)) * spacing,
-					(float)(row - (nrRows / 2)) * spacing,
-					0.0f
-				));
-				model = glm::rotate(model, rotation[row * 7 + col], glm::vec3(0, 1, 0));
-				pbrShader.setMat4("model", model);
-				renderQuad();
+		model = glm::mat4();
+		pbrShader.setMat4("model", model);
+		renderQuad(); // finished rendering the ground
+
+		if (true) {
+			pbrShader.setFloat("heightScale", 0.0f);
+			for (int i = 0; i < amount; i++) {
+				pineTree.SetPosition(positions[i].x, positions[i].y, positions[i].z);
+				pineTree.SetRotation(rotations[i].x, rotations[i].y, rotations[i].z);
+				pineTree.SetScale(0.1, 0.1, 0.1);
+				pineTree.Draw(&pbrShader);
 			}
+			pbrShader.setFloat("heightScale", 0.1f);
+		}
+		else {
+
+			/* 
+			In general, instancing is a win if you're rendering lots of instances (1000
+			is quite a bit, but not enough. Think 10,000) which contain a modest number 
+			of vertices (20,000 is probably too many. Look more into 100-3000 or so).
+			*/
+
+			instanceShader.use();
+			instanceShader.setMat4("projection", projection);
+			instanceShader.setMat4("view", view);
+			instanceShader.setVec3("camPos", camera.Position);
+			instanceShader.setVec3("viewPos", camera.Position);
+			instanceShader.setVec3("lightPos", lightPositions[0]);
+
+			pineTree.BindTextures();
+
+			glBindVertexArray(pineTree.getVAO());
+			glDrawElementsInstanced(GL_TRIANGLES, pineTree.indices.size(), GL_UNSIGNED_INT, 0, amount);
+			glBindVertexArray(0);
 		}
 
-		//model = glm::mat4();
-		//pbrShader.setMat4("model", model);
-		//renderBentQuad();
-		
-		model = glm::translate(model, glm::vec3(0, 0, 0));
-		pbrShader.setMat4("model", model);
-		renderQuad(); // renders the ground
-		
-		pbrShader.setFloat("heightScale", 0.0f);
-		
-		for (int i = 0; i < 200; i++) {
-			pineTree.SetPosition(positions[i].x, 0, positions[i].z);
-			pineTree.SetRotation(0, rotations[i].y, 0);
-			pineTree.Draw(&pbrShader);
-		}
-		
-		pbrShader.setFloat("heightScale", 0.1f);
 
 		/////////////////////////////////////////////////////////////
 		// 3. render the skybox

@@ -144,24 +144,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\bin\Data\Shaders\pbr.fs" />
-    <None Include="..\bin\Data\Shaders\pbr.vs" />
-    <None Include="..\bin\Data\Shaders\pbrnoparallax.fs" />
-    <None Include="..\bin\Data\Shaders\pbrnoparallax.vs" />
-    <None Include="..\bin\Data\Shaders\screenQuad.fs" />
-    <None Include="..\bin\Data\Shaders\screenQuad.vs" />
-    <None Include="..\bin\Data\Shaders\simpleDepth.fs" />
-    <None Include="..\bin\Data\Shaders\simpleDepth.vs" />
-    <None Include="..\bin\Data\Shaders\skybox.fs" />
-    <None Include="..\bin\Data\Shaders\skybox.vs" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\glh\glh.vcxproj">
       <Project>{91a76a06-d512-4e72-aed3-bcfc42fe2d5f}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

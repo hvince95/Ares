@@ -51,6 +51,7 @@ void Shader::LoadShader(const char* vertexPath = nullptr, const char* fragmentPa
 	catch (std::ifstream::failure e)
 	{
 		Log::WriteError("Shader::File " + std::string(vertexPath) + " or " + std::string(vertexPath) + " not successfully read");
+		return;
 	}
 	const char* vShaderCode = vertexCode.c_str();
 	const char * fShaderCode = fragmentCode.c_str();
