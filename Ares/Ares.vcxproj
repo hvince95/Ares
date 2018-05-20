@@ -71,24 +71,24 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)bin\</OutDir>
-    <IncludePath>D:\Code\stb_image;D:\Code\glm-0.9.8.5\;D:\Code\glfw-3.2.1\include;D:\Code\glad\include;D:\Code\assimp-4.1.0\include;$(SolutionDir)glh\;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Code\glfw-3.2.1\build\src\Debug;D:\Code\assimp-4.1.0\build\code\Release;$(SolutionDir)glh\Lib\;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\Code\stb_image;D:\Code\glm-0.9.8.5\;D:\Code\glfw-3.2.1\include;D:\Code\glad\include;D:\Code\assimp-4.1.0\include;$(SolutionDir)glh\src;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Code\glfw-3.2.1\build\src\Debug;D:\Code\assimp-4.1.0\build\code\Release;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)bin\</OutDir>
-    <IncludePath>D:\Code\stb_image;D:\Code\glm-0.9.8.5\;D:\Code\glfw-3.2.1\include;D:\Code\glad\include;D:\Code\assimp-4.1.0\include;$(SolutionDir)glh\;$(IncludePath)</IncludePath>
+    <IncludePath>D:\Code\stb_image;D:\Code\glm-0.9.8.5\;D:\Code\glfw-3.2.1\include;D:\Code\glad\include;D:\Code\assimp-4.1.0\include;$(SolutionDir)glh\src;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Code\glfw-3.2.1\build\src\Release;D:\Code\assimp-4.1.0\build\code\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)bin\</OutDir>
-    <IncludePath>D:\Code\stb_image;D:\Code\glm-0.9.8.5\;D:\Code\glfw-3.2.1\include;D:\Code\glad\include;D:\Code\assimp-4.1.0\include;$(SolutionDir)glh\;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Code\glfw-3.2.1\build\src\Debug;D:\Code\assimp-4.1.0\build\code\Release;$(SolutionDir)glh\Lib\;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\Code\stb_image;D:\Code\glm-0.9.8.5\;D:\Code\glfw-3.2.1\include;D:\Code\glad\include;D:\Code\assimp-4.1.0\include;$(SolutionDir)glh\src;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Code\glfw-3.2.1\build\src\Debug;D:\Code\assimp-4.1.0\build\code\Release;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)bin\</OutDir>
-    <IncludePath>D:\Code\stb_image;D:\Code\glm-0.9.8.5\;D:\Code\glfw-3.2.1\include;D:\Code\glad\include;D:\Code\assimp-4.1.0\include;$(SolutionDir)glh\;$(IncludePath)</IncludePath>
+    <IncludePath>D:\Code\stb_image;D:\Code\glm-0.9.8.5\;D:\Code\glfw-3.2.1\include;D:\Code\glad\include;D:\Code\assimp-4.1.0\include;$(SolutionDir)glh\src;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Code\glfw-3.2.1\build\src\Release;D:\Code\assimp-4.1.0\build\code\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -99,7 +99,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>opengl32.lib;glfw3_d.lib;assimp-vc140-mt.lib;glh_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3_d.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -110,7 +110,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>opengl32.lib;glfw3_d.lib;assimp-vc140-mt.lib;glh_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3_d.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

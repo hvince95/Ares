@@ -1,25 +1,29 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="glh\Graphics\Shader.h" />
-    <ClInclude Include="glh\Graphics\Camera.h" />
-    <ClInclude Include="glh\IO\Log.h" />
-    <ClInclude Include="glh\Core\Util.h" />
-    <ClInclude Include="glh\Graphics\Skybox.h" />
-    <ClInclude Include="glh\Graphics\Framebuffer.h" />
-    <ClInclude Include="glh\Graphics\Model.h" />
-    <ClInclude Include="glh\Graphics\LightBuffer.h" />
+    <ClInclude Include="src\glh\glh.h" />
+    <ClInclude Include="src\glh\app\Scene.h" />
+    <ClInclude Include="src\glh\graphics\Camera.h" />
+    <ClInclude Include="src\glh\graphics\Framebuffer.h" />
+    <ClInclude Include="src\glh\graphics\LightBuffer.h" />
+    <ClInclude Include="src\glh\graphics\Model.h" />
+    <ClInclude Include="src\glh\graphics\Shader.h" />
+    <ClInclude Include="src\glh\graphics\Skybox.h" />
+    <ClInclude Include="src\glh\util\packed_freelist.h" />
+    <ClInclude Include="src\glh\util\Timer.h" />
+    <ClInclude Include="src\glh\util\Log.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="glh\Graphics\Camera.cpp" />
-    <ClCompile Include="glh\ThirdParty\glad.c" />
-    <ClCompile Include="glh\ThirdParty\stb_image.cpp" />
-    <ClCompile Include="glh\IO\Log.cpp" />
-    <ClCompile Include="glh\Core\Util.cpp" />
-    <ClCompile Include="glh\Graphics\Skybox.cpp" />
-    <ClCompile Include="glh\Graphics\Framebuffer.cpp" />
-    <ClCompile Include="glh\Graphics\Shader.cpp" />
-    <ClCompile Include="glh\Graphics\Model.cpp" />
-    <ClCompile Include="glh\Graphics\LightBuffer.cpp" />
+    <ClCompile Include="src\glh\app\Scene.cpp" />
+    <ClCompile Include="src\glh\graphics\Camera.cpp" />
+    <ClCompile Include="src\glh\graphics\Framebuffer.cpp" />
+    <ClCompile Include="src\glh\graphics\LightBuffer.cpp" />
+    <ClCompile Include="src\glh\graphics\Model.cpp" />
+    <ClCompile Include="src\glh\graphics\Shader.cpp" />
+    <ClCompile Include="src\glh\graphics\Skybox.cpp" />
+    <ClCompile Include="src\glh\thirdParty\glad.c" />
+    <ClCompile Include="src\glh\thirdParty\stb_image.cpp" />
+    <ClCompile Include="src\glh\util\Timer.cpp" />
+    <ClCompile Include="src\glh\util\Log.cpp" />
   </ItemGroup>
 </Project>

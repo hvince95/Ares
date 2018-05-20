@@ -6,13 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/random.hpp>
 
-#include <glh/Graphics/Shader.h>
-#include <glh/Graphics/Camera.h>
-#include <glh/Graphics/Skybox.h>
-#include <glh/Graphics/Framebuffer.h>
-#include <glh/Graphics/Model.h>
-#include <glh/Graphics/LightBuffer.h>
-#include <glh/IO/Log.h>
+#include <glh/glh.h>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -20,6 +14,8 @@
 
 #include <iostream>
 #include <sstream>
+
+using namespace glh;
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -35,7 +31,7 @@ const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Graphics::Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -62,7 +58,7 @@ int main(int argc, char *argv[])
 	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Ares", NULL, NULL);
 	if (window == NULL)
 	{
-		Log::WriteError("Failed to create GLFW window");
+		Util::Log::WriteError("Failed to create GLFW window");
 		glfwTerminate();
 		return -1;
 	}
@@ -83,7 +79,7 @@ int main(int argc, char *argv[])
 	// ---------------------------------------
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
-		Log::WriteError("Failed to initialize GLAD");
+		Util::Log::WriteError("Failed to initialize GLAD");
 		return -1;
 	}
 
@@ -95,9 +91,9 @@ int main(int argc, char *argv[])
 
 	// build and compile shaders
 	// -------------------------
-	Shader pbrShader("Data/Shaders/pbr.vs", "Data/Shaders/pbr.fs");
-	Shader simpleDepthShader("Data/Shaders/simpleDepth.vs", "Data/Shaders/simpleDepth.fs");
-	Shader instanceShader("Data/Shaders/Instanced.vs", "Data/Shaders/Instanced.fs");
+	Graphics::Shader pbrShader("Data/Shaders/pbr.vs", "Data/Shaders/pbr.fs");
+	Graphics::Shader simpleDepthShader("Data/Shaders/simpleDepth.vs", "Data/Shaders/simpleDepth.fs");
+	Graphics::Shader instanceShader("Data/Shaders/Instanced.vs", "Data/Shaders/Instanced.fs");
 
 
 	pbrShader.use();
@@ -154,10 +150,13 @@ int main(int argc, char *argv[])
 
 	// load models
 	// -----------
-	Skybox skyboxObject = Skybox("OceanIslands");
+	Graphics::Skybox skyboxObject = Graphics::Skybox("OceanIslands");
 	
 	// framebuffer
-	Framebuffer frameBuffer(SCR_WIDTH, SCR_HEIGHT);
+	Graphics::Framebuffer frameBuffer(SCR_WIDTH, SCR_HEIGHT);
+	frameBuffer.AddColourBuffer();
+	frameBuffer.AddDepthStencBuffer();
+	frameBuffer.CheckStatus();
 
 
 
@@ -169,10 +168,10 @@ int main(int argc, char *argv[])
 	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 	glm::mat4 view = camera.GetViewMatrix();
 	
-	Model pineTree = Model("Data/Models/tree/pineTree2.obj", "png");
+	Graphics::Model pineTree = Graphics::Model("Data/Models/tree/pineTree2.obj", "png");
 	//Model pineTree = Model("Data/Models/rock/rock.obj", "jpg");
 	//pineTree.LoadTextures(Model::ALBEDO | Model::METALLIC | Model::NORMAL | Model::ROUGHNESS);
-	pineTree.LoadTextures(Model::ALBEDO);
+	pineTree.LoadTextures(Graphics::Model::ALBEDO);
 	
 	const unsigned int amount = 10;
 	glm::vec3 positions[amount];
@@ -187,7 +186,7 @@ int main(int argc, char *argv[])
 
 	glm::mat4* modelMatrices;
 	modelMatrices = new glm::mat4[amount];
-	srand(glfwGetTime()); // initialize random seed	
+	srand((int) glfwGetTime()); // initialize random seed	
 	float radius = 150.0;
 	float offset = 25.0f;
 	for (unsigned int i = 0; i < amount; i++)
@@ -243,7 +242,7 @@ int main(int argc, char *argv[])
 	camera.SetMovementSpeed(1.0f);
 	camera.SetPosition(0.0f, 1.8f, 4.0f);
 
-	LightBuffer lightMap = LightBuffer();
+	Graphics::LightBuffer lightMap = Graphics::LightBuffer();
 
 
 
@@ -265,7 +264,7 @@ int main(int argc, char *argv[])
 
 		if (currentTime - lastLog >= 1.0f) {
 			lastLog += 1.0f;
-			Log::Write(Log::LOG_DEBUG, ("FPS: " + std::to_string(frames) + " (" + std::to_string(1000.0/frames) + " ms)"));
+			Util::Log::Write(Util::Log::LOG_DEBUG, ("FPS: " + std::to_string(frames) + " (" + std::to_string(1000.0/frames) + " ms)"));
 			frames = 0;
 		}
 		frames++;
@@ -367,7 +366,7 @@ int main(int argc, char *argv[])
 			for (int i = 0; i < amount; i++) {
 				pineTree.SetPosition(positions[i].x, positions[i].y, positions[i].z);
 				pineTree.SetRotation(rotations[i].x, rotations[i].y, rotations[i].z);
-				pineTree.SetScale(0.1, 0.1, 0.1);
+				pineTree.SetScale(0.1f, 0.1f, 0.1f);
 				pineTree.Draw(&pbrShader);
 			}
 			pbrShader.setFloat("heightScale", 0.1f);
