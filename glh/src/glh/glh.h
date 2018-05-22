@@ -13,6 +13,5 @@
 #include "glh/graphics/Shader.h"
 #include "glh/graphics/Skybox.h"
 
-#include "glh/util/packed_freelist.h"
 #include "glh/util/Log.h"
 #include "glh/util/Timer.h"

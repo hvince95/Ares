@@ -2,8 +2,6 @@
 
 #include <glad/glad.h>
 
-#include "../util/packed_freelist.h"
-
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
@@ -11,81 +9,21 @@
 #include <map>
 #include <string>
 
+#include "../graphics/Camera.h"
+#include "../graphics/Shader.h"
+#include "../graphics/Entity.h"
+
 namespace glh {
-	namespace app {
-
-		struct DiffuseMap
-		{
-			GLuint DiffuseMapTO;
-		};
-
-		struct Material
-		{
-			std::string Name;
-
-			float Ambient[3];
-			float Diffuse[3];
-			float Specular[3];
-			float Shininess;
-			uint32_t DiffuseMapID;
-		};
-
-		struct Mesh
-		{
-			std::string Name;
-
-			GLuint MeshVAO;
-			GLuint PositionBO;
-			GLuint TexCoordBO;
-			GLuint NormalBO;
-			GLuint IndexBO;
-
-			GLuint IndexCount;
-			GLuint VertexCount;
-
-			std::vector<uint32_t> MaterialIDs;
-		};
-
-		struct Transform
-		{
-			glm::vec3 Scale;
-			glm::vec3 RotationOrigin;
-			glm::quat Rotation;
-			glm::vec3 Translation;
-		};
-
-		struct Instance
-		{
-			uint32_t MeshID;
-			uint32_t TransformID;
-		};
-
-		struct Camera
-		{
-			// View
-			glm::vec3 Eye;
-			glm::vec3 Target;
-			glm::vec3 Up;
-
-			// Projection
-			float FovY;
-			float Aspect;
-			float ZNear;
-		};
+	namespace App {
 
 		class Scene
 		{
 		public:
-			Util::packed_freelist<DiffuseMap> DiffuseMaps;
-			Util::packed_freelist<Material> Materials;
-			Util::packed_freelist<Mesh> Meshes;
-			Util::packed_freelist<Transform> Transforms;
-			Util::packed_freelist<Instance> Instances;
-			Util::packed_freelist<Camera> Cameras;
-
-			uint32_t MainCameraID;
-
 			void Init();
+		private:
+			std::vector<Graphics::Shader*> m_Shaders;
+			std::vector<Graphics::Entity*> m_Entities;
+			std::vector<Graphics::Camera*> m_Cameras;
 		};
 
 		void LoadMeshes(

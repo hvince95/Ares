@@ -156,6 +156,8 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\glh\graphics\Component.h" />
+    <ClInclude Include="src\glh\graphics\Entity.h" />
     <ClInclude Include="src\glh\util\Timer.h" />
     <ClInclude Include="src\glh\glh.h" />
     <ClInclude Include="src\glh\graphics\Camera.h" />
@@ -166,7 +168,6 @@
     <ClInclude Include="src\glh\graphics\Shader.h" />
     <ClInclude Include="src\glh\graphics\Skybox.h" />
     <ClInclude Include="src\glh\util\Log.h" />
-    <ClInclude Include="src\glh\util\packed_freelist.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\glh\util\Timer.cpp" />
